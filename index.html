@@ -3,51 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CyberDuel TCG</title>
+    <title>GOREM BATTLES</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-    <div id="game-container">
-        <!-- Зона Противника -->
-        <div class="player-zone" id="enemy-zone">
-            <div class="hero-portrait enemy-hero">
-                <span id="enemy-hp">30</span> HP
+    <div id="app">
+        <!-- ВРАГ (Алексей или Лже-Санта) -->
+        <div class="zone enemy-zone">
+            <div class="hero enemy-hero">
+                <div class="hero-avatar" style="background-image: url('https://i.postimg.cc/FsTD4L7L/santaaleksey-removebg-preview.png')"></div>
+                <div class="hero-stats">
+                    <span class="hp-bar">❤️ <span id="enemy-hp">30</span></span>
+                </div>
             </div>
-            <div class="hand" id="enemy-hand">
-                <!-- Карты противника (рубашкой вверх) -->
-            </div>
+            <div class="hand" id="enemy-hand"></div> <!-- Карты врага -->
         </div>
 
-        <!-- Поле боя -->
+        <!-- ПОЛЕ БОЯ -->
         <div class="battlefield">
             <div class="board-row" id="enemy-board"></div>
             <div class="board-row" id="player-board"></div>
         </div>
 
-        <!-- Зона Игрока -->
-        <div class="player-zone" id="player-zone">
-            <div class="info-panel">
-                <div class="mana-display">⚡ <span id="player-mana">0</span>/<span id="max-mana">0</span></div>
-                <button id="end-turn-btn" onclick="endTurn()">Закончить ход</button>
+        <!-- ИГРОК -->
+        <div class="zone player-zone">
+            <div class="controls">
+                <div class="mana-crystal">💎 <span id="player-mana">0</span>/<span id="max-mana">0</span> MTC</div>
+                <button id="end-turn" onclick="endTurn()">ЗАКОНЧИТЬ</button>
             </div>
-            <div class="hero-portrait player-hero">
-                <span id="player-hp">30</span> HP
+            
+            <div class="hero player-hero">
+                <div class="hero-avatar" style="background-image: url('https://i.postimg.cc/0Q33mdRs/photo-2025-11-30-02-08-33-removebg-preview.png')"></div>
+                <div class="hero-stats">
+                    <span class="hp-bar">❤️ <span id="player-hp">30</span></span>
+                </div>
             </div>
-            <div class="hand" id="player-hand">
-                <!-- Карты игрока -->
-            </div>
+            
+            <div class="hand" id="player-hand"></div>
         </div>
-        
-        <!-- Оверлей для сообщений -->
-        <div id="overlay" class="hidden">
-            <div class="message-box">
-                <h2 id="msg-title">Победа!</h2>
-                <button onclick="location.reload()">Играть снова</button>
+
+        <!-- Всплывающее окно -->
+        <div id="modal" class="hidden">
+            <div class="modal-content">
+                <h1 id="modal-title">ПОБЕДА!</h1>
+                <p id="modal-desc">Вы защитили сервер от Алексея.</p>
+                <button onclick="location.reload()">ЕЩЁ РАЗ</button>
             </div>
         </div>
     </div>
-
     <script src="game.js"></script>
 </body>
 </html>
