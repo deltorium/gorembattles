@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CyberDuel TCG</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div id="game-container">
+        <!-- Зона Противника -->
+        <div class="player-zone" id="enemy-zone">
+            <div class="hero-portrait enemy-hero">
+                <span id="enemy-hp">30</span> HP
+            </div>
+            <div class="hand" id="enemy-hand">
+                <!-- Карты противника (рубашкой вверх) -->
+            </div>
+        </div>
+
+        <!-- Поле боя -->
+        <div class="battlefield">
+            <div class="board-row" id="enemy-board"></div>
+            <div class="board-row" id="player-board"></div>
+        </div>
+
+        <!-- Зона Игрока -->
+        <div class="player-zone" id="player-zone">
+            <div class="info-panel">
+                <div class="mana-display">⚡ <span id="player-mana">0</span>/<span id="max-mana">0</span></div>
+                <button id="end-turn-btn" onclick="endTurn()">Закончить ход</button>
+            </div>
+            <div class="hero-portrait player-hero">
+                <span id="player-hp">30</span> HP
+            </div>
+            <div class="hand" id="player-hand">
+                <!-- Карты игрока -->
+            </div>
+        </div>
+        
+        <!-- Оверлей для сообщений -->
+        <div id="overlay" class="hidden">
+            <div class="message-box">
+                <h2 id="msg-title">Победа!</h2>
+                <button onclick="location.reload()">Играть снова</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
