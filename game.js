@@ -1,7 +1,7 @@
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-// === БАЗА КАРТ ===
+// === БАЗА ИГРОВЫХ КАРТ (КОЛОДА) ===
 const CARDS = [
     { id: 1, name: "Тимофей", cost: 2, atk: 2, hp: 3, img: "https://i.postimg.cc/fbXxcyPS/photo-2025-11-16-23-23-40.jpg" },
     { id: 2, name: "Нейронка", cost: 3, atk: 3, hp: 2, img: "https://i.postimg.cc/Lsfzt5WS/photo-2025-11-16-23-24-34.jpg" },
@@ -13,9 +13,75 @@ const CARDS = [
     { id: 8, name: "Горем", cost: 1, atk: 2, hp: 1, img: "https://i.postimg.cc/ZR8nGvXF/photo_2025_11_16_21_52_10.jpg" }
 ];
 
-const REWARDS = [
-    { name: "Новогодний Котар", img: "https://i.postimg.cc/0Q33mdRs/photo-2025-11-30-02-08-33-removebg-preview.png" },
-    { name: "Санта Алексей", img: "https://i.postimg.cc/FsTD4L7L/santaaleksey-removebg-preview.png" }
+// === ВИЗУАЛЬНЫЕ НАГРАДЫ (ПОЛНЫЙ СПИСОК ИЗ БОТА) ===
+const VISUAL_REWARDS = [
+    { name: "Жена Юджина", img: "https://i.postimg.cc/9Q4Q3VCj/3F3F_3F3F3F.webp" },
+    { name: "Нарко-Сова", img: "https://i.postimg.cc/0y6ygxxL/3F3F3F3F.webp" },
+    { name: "Beer Belly Bob", img: "https://i.postimg.cc/zGLGm55M/Beer_Belly_Bob.webp" },
+    { name: "Олень из будущего", img: "https://i.postimg.cc/NjyjhYYZ/Deer_from_the_future.webp" },
+    { name: "Олень из соседней комнаты", img: "https://i.postimg.cc/yYp8rW4K/3F3F3F3F3F3F3F3F3F3F3F.webp" },
+    { name: "Олень подкалывающий", img: "https://i.postimg.cc/65bp1TJJ/3F3F3F3F3F3F3F3F3F.webp" },
+    { name: "PowerDrish", img: "https://i.postimg.cc/X71YDXS6/Power_Drish_3F.webp" },
+    { name: "Аркадий Анатольевич", img: "https://i.postimg.cc/8PXzns83/3F3F3F3F3F3F3F3F3F1.webp" },
+    { name: "Ароматный Пестик", img: "https://i.postimg.cc/289SX3Rp/3F3F3F3F3F3F3F_2.webp" },
+    { name: "Астероид-Юджин", img: "https://i.postimg.cc/VLZkH5yp/3F3F3F3F_3F3F.webp" },
+    { name: "Пингвикрыл", img: "https://i.postimg.cc/pXcL1yNS/3F3F3F3F3F.webp" },
+    { name: "Повидло", img: "https://i.postimg.cc/xTp1Fqr6/3F3F3F.webp" },
+    { name: "Ползун", img: "https://i.postimg.cc/RVpZbqrG/3F3F_3F3F3F.webp" },
+    { name: "Полоскун", img: "https://i.postimg.cc/xTp1FqrR/3F3F3F3F_3F3F3F.webp" },
+    { name: "Безумный Дракон", img: "https://i.postimg.cc/wT4jb3K0/3F3F3F1.webp" },
+    { name: "Билли Боб", img: "https://i.postimg.cc/HsvkPjG9/3F3F.webp" },
+    { name: "Брат Фернандо", img: "https://i.postimg.cc/PrV5FNGb/3F3F3F3F2.webp" },
+    { name: "Радужная Форель", img: "https://i.postimg.cc/TYN3Hh8q/3F3F3F3F_3F3F3F.webp" },
+    { name: "Раптор", img: "https://i.postimg.cc/3JfxbWMX/3F3F3F.webp" },
+    { name: "Ружьё", img: "https://i.postimg.cc/YqDCyjcQ/3F3F_3F.webp" },
+    { name: "Рыба-вода", img: "https://i.postimg.cc/ZKs5D0k3/3F3F_3F3F_1.webp" },
+    { name: "Рыба-меч", img: "https://i.postimg.cc/5N2t3Lr5/3F3F_3F_new.webp" },
+    { name: "Рыбы-маги", img: "https://i.postimg.cc/Pr5q4Y7m/ор3F3F_3F3F.webp" },
+    { name: "Весло", img: "https://i.postimg.cc/L6Q80hdL/323F3F.webp" },
+    { name: "Вибро-плот", img: "https://i.postimg.cc/kXg5cKHs/3F3F3F3F3F3F3F3F3F.webp" },
+    { name: "Гарри", img: "https://i.postimg.cc/CLxKNk2k/3F3F_3щпн_F.webp" },
+    { name: "Грибник", img: "https://i.postimg.cc/tC4g5Wc6/3Fцпкцкпу3F3F.webp" },
+    { name: "Грустный труп", img: "https://i.postimg.cc/Wb14ngyJ/3F3F3F3F_3F3F.webp" },
+    { name: "Гусемедведь", img: "https://i.postimg.cc/c4LJmwzn/3F3F3F3F3F.webp" },
+    { name: "Сара", img: "https://i.postimg.cc/Pr5q4Y7P/3F3F1.webp" },
+    { name: "Джеремия", img: "https://i.postimg.cc/Pr5q4Y7p/3F3кыуп_F3F3F2.webp" },
+    { name: "Додо", img: "https://i.postimg.cc/nchLkBWV/3F3F.webp" },
+    { name: "Скат-слуга", img: "https://i.postimg.cc/X7Yv8dPW/3F3F_3F3F.webp" },
+    { name: "Сталкер Саня", img: "https://i.postimg.cc/m2grwCn2/3F3F3уепкеупк_F3F.webp" },
+    { name: "Старейшина", img: "https://i.postimg.cc/GhmpQGfr/3руе_F3F3F3F3F.webp" },
+    { name: "Старец Юджин", img: "https://i.postimg.cc/xjRCMt6q/3F3F3F_3F3F.webp" },
+    { name: "Евгений Анус", img: "https://i.postimg.cc/KcNzBJ0v/3F3F3Fруекурек3F3F.webp" },
+    { name: "Супер Акулы", img: "https://i.postimg.cc/6603nYMW/3F3F3F3F3F1.webp" },
+    { name: "Зажигалка", img: "https://i.postimg.cc/SQrsCDgm/3Fуркеукер3F3F3F.webp" },
+    { name: "Зомби-Юджин", img: "https://i.postimg.cc/Wpn3gX5c/3F3F3укеруекр_F3F3F.webp" },
+    { name: "Тренер", img: "https://i.postimg.cc/HW2xXBBF/3Fцпукпуцпук3F3F1.webp" },
+    { name: "Кабан Банан", img: "https://i.postimg.cc/L4TXLNxd/Кабан.webp" },
+    { name: "Капитан Краб", img: "https://i.postimg.cc/mZwDC88q/8DF8AC90_735E_495C_ABAA_98B2DD005F2B.webp" },
+    { name: "Уилсон", img: "https://i.postimg.cc/GtqmRm4k/3F3Fкцуцупк3F.webp" },
+    { name: "Кижуч", img: "https://i.postimg.cc/hvptntXV/3F3Fцукпцукп.webp" },
+    { name: "Кит", img: "https://i.postimg.cc/BbMn3njH/3F.webp" },
+    { name: "Фернандо", img: "https://i.postimg.cc/1XJ3S38F/3F3F3F3F.webp" },
+    { name: "Компас", img: "https://i.postimg.cc/MHdpwpnQ/3F3F3F283F_3F3F3F).webp" },
+    { name: "Красная луна", img: "https://i.postimg.cc/T1C3x3Km/3F3F3F3Fкцпкуцкуцп3F.webp" },
+    { name: "Француз", img: "https://i.postimg.cc/J0Pz8zsH/3F3куцпцупуц_F3F.webp" },
+    { name: "Лама Кинг", img: "https://i.postimg.cc/QC0dDdFB/3F3F_3F3F.webp" },
+    { name: "Холодильник", img: "https://i.postimg.cc/x8t1Q1Xb/Холодильник.webp" },
+    { name: "Маг", img: "https://i.postimg.cc/hvptntXv/3цкппкц_F3F_3F3F.webp" },
+    { name: "Чайка", img: "https://i.postimg.cc/hvptntXf/3F3Fцукпцукп.webp" },
+    { name: "Мак Высер", img: "https://i.postimg.cc/Y0bC7Cvr/Mac_Viser.webp" },
+    { name: "Мак Старец", img: "https://i.postimg.cc/Y0bC7Cv7/3F3F3укпуп_F3F.webp" },
+    { name: "Медуза", img: "https://i.postimg.cc/sxwgzgMy/3негег_F3F3F.webp" },
+    { name: "Шыпоштык", img: "https://i.postimg.cc/nr0hxhXn/3ыреруер_F3F3F3F.webp" },
+    { name: "МерзкоЗмей", img: "https://i.postimg.cc/sxVgbhg3/3цпуц_F3F3F3F3F.webp" },
+    { name: "Микроволновка", img: "https://i.postimg.cc/QCXdvTdh/3F3F3F3F3F3F_2.webp" },
+    { name: "Юджин Всемогущий", img: "https://i.postimg.cc/XqVYtCYV/3F3F3F3F3F3F3F.webp" },
+    { name: "Минералоискатель", img: "https://i.postimg.cc/qqjvrvzW/3F3F3F3F3F3F3F3F.webp" },
+    { name: "Юджин-Археолог", img: "https://i.postimg.cc/1X93bq3Q/3F3F3F3F3F3F.webp" },
+    { name: "Юджин-Коллега", img: "https://i.postimg.cc/HnpkFykm/3F3F3F3F3F3F.webp" },
+    { name: "Мистер Друшлак", img: "https://i.postimg.cc/ZnT5Xd5h/3F3F3F_3F3F3F.webp" },
+    { name: "Мистер Пэкедж", img: "https://i.postimg.cc/HnpkFyk1/3F3F3F_3F3F3F_new.webp" },
+    { name: "№1", img: "https://i.postimg.cc/vTQZCVHJ/3F3F3F3Fкупыукпыукпы.webp" }
 ];
 
 let game = {
@@ -173,10 +239,7 @@ function resolveCombat() {
     else if (game.player.hp <= 0) loseGame();
 }
 
-// =========================================================
-// === НОВЫЙ ИСПРАВЛЕННЫЙ ИИ (БЕЗ ЗАВИСАНИЙ) ===
-// =========================================================
-
+// === ИИ И ОЧЕРЕДНОСТЬ ХОДОВ ===
 function endTurn() {
     if (!game.playerTurn) return;
     game.playerTurn = false;
@@ -386,11 +449,17 @@ function loseGame() {
 function openGift() {
     document.querySelector('.gift-box').style.display = 'none';
     document.getElementById('card-reveal').classList.remove('hidden');
-    const reward = REWARDS[Math.floor(Math.random() * REWARDS.length)];
+    const reward = VISUAL_REWARDS[Math.floor(Math.random() * VISUAL_REWARDS.length)];
     document.getElementById('reward-img').src = reward.img;
     document.getElementById('reward-name').innerText = reward.name;
     document.getElementById('claim-btn').classList.remove('hidden');
     tg.HapticFeedback.impactOccurred('heavy');
 }
+
+// === ВАЖНО: ОТПРАВКА ДАННЫХ БОТУ ===
+document.getElementById('claim-btn').onclick = function() {
+    // Эта команда отправляет данные боту. Бот поймает "win_common" и выдаст награду в БД.
+    tg.sendData("win_common");
+};
 
 init();
