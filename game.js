@@ -28,7 +28,7 @@ let game = {
 
 // === ИНИЦИАЛИЗАЦИЯ ===
 function init() {
-    // Колоды
+    // Создаем колоды
     for(let i=0; i<15; i++) {
         game.player.deck.push(createCard());
         game.enemy.deck.push(createCard());
@@ -51,10 +51,11 @@ function draw(who, count) {
     }
 }
 
-// === УПРАВЛЕНИЕ ===
+// === УПРАВЛЕНИЕ (DRAG & DROP) ===
 function setupDragAndDrop() {
     const app = document.getElementById('app');
     
+    // Начало
     const startDrag = (e) => {
         if (!game.playerTurn) return;
         const target = e.target.closest('.card');
@@ -63,38 +64,54 @@ function setupDragAndDrop() {
         const parentId = target.parentElement.id;
         const index = parseInt(target.dataset.index);
         
+        // Логика перетаскивания из РУКИ
         if (parentId === 'player-hand') {
             const card = game.player.hand[index];
-            if (card.cost > game.player.mana) { tg.HapticFeedback.notificationOccurred('error'); return; }
+            if (card.cost > game.player.mana) { 
+                tg.HapticFeedback.notificationOccurred('error'); 
+                return; 
+            }
             game.dragged = { source: 'hand', index, card };
-        } else if (parentId === 'player-board') {
+            document.getElementById('player-board').classList.add('highlight');
+        } 
+        // Логика перетаскивания со СТОЛА (Атака)
+        else if (parentId === 'player-board') {
             const card = game.player.board[index];
-            if (card.sleep) { tg.HapticFeedback.notificationOccurred('warning'); return; }
+            if (card.sleep) { 
+                tg.HapticFeedback.notificationOccurred('warning'); 
+                return; 
+            }
             game.dragged = { source: 'board', index, card };
-        } else return;
+        } else {
+            return;
+        }
 
+        // Создаем "призрака"
         const proxy = document.getElementById('drag-proxy');
         proxy.style.backgroundImage = `url('${game.dragged.card.img}')`;
         proxy.innerHTML = target.innerHTML;
         proxy.classList.remove('hidden');
         proxy.classList.add('dragging');
-        moveDrag(e);
         
-        if (game.dragged.source === 'hand') document.getElementById('player-board').classList.add('highlight');
+        // Сразу двигаем к пальцу
+        moveDrag(e);
     };
 
+    // Движение
     const moveDrag = (e) => {
         if (!game.dragged) return;
-        e.preventDefault();
+        e.preventDefault(); // Блокируем скролл
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        
         const proxy = document.getElementById('drag-proxy');
-        // Центрируем прокси под пальцем
-        proxy.style.left = (clientX - 32) + 'px'; 
-        proxy.style.top = (clientY - 45) + 'px';
+        proxy.style.left = (clientX - 32) + 'px'; // -половина ширины
+        proxy.style.top = (clientY - 48) + 'px';  // -половина высоты
+        
         checkHover(clientX, clientY);
     };
 
+    // Конец
     const endDrag = (e) => {
         if (!game.dragged) return;
         document.getElementById('drag-proxy').classList.add('hidden');
@@ -105,15 +122,23 @@ function setupDragAndDrop() {
         const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
         const dropTarget = document.elementFromPoint(clientX, clientY);
 
+        if (!dropTarget) { game.dragged = null; return; }
+
         if (game.dragged.source === 'hand') {
+            // Играем карту если бросили на стол или поле боя
             if (dropTarget.closest('#player-board') || dropTarget.closest('.battlefield')) {
                 playCard(game.dragged.index);
             }
         } else if (game.dragged.source === 'board') {
+            // Атакуем если бросили на врага
             const enemyUnit = dropTarget.closest('#enemy-board .card');
             const enemyHero = dropTarget.closest('#enemy-hero-zone');
-            if (enemyUnit) attack(game.dragged.index, 'unit', parseInt(enemyUnit.dataset.index));
-            else if (enemyHero) attack(game.dragged.index, 'hero', 0);
+            
+            if (enemyUnit) {
+                attack(game.dragged.index, 'unit', parseInt(enemyUnit.dataset.index));
+            } else if (enemyHero) {
+                attack(game.dragged.index, 'hero', 0);
+            }
         }
         game.dragged = null;
     };
@@ -128,24 +153,31 @@ function setupDragAndDrop() {
 
 function checkHover(x, y) {
     document.querySelectorAll('.target-highlight').forEach(el => el.classList.remove('target-highlight'));
+    // Прячем прокси на мгновение, чтобы пробить его лучом
     const proxy = document.getElementById('drag-proxy');
     proxy.style.visibility = 'hidden';
     const elem = document.elementFromPoint(x, y);
     proxy.style.visibility = 'visible';
+
     if (!elem) return;
+
     if (game.dragged.source === 'board') {
         const target = elem.closest('#enemy-board .card') || elem.closest('.enemy-hero');
         if (target) target.classList.add('target-highlight');
     }
 }
 
-// === ЛОГИКА ===
+// === ИГРОВАЯ ЛОГИКА ===
 function playCard(index) {
-    if (game.player.board.length >= 5) return;
+    if (game.player.board.length >= 5) {
+        tg.showAlert("Мест на столе нет!");
+        return;
+    }
     const card = game.player.hand[index];
     game.player.mana -= card.cost;
     game.player.hand.splice(index, 1);
     game.player.board.push({ ...card, sleep: true });
+    
     tg.HapticFeedback.impactOccurred('light');
     updateUI();
 }
@@ -155,17 +187,14 @@ function attack(attackerIdx, type, targetIdx) {
     let target = type === 'hero' ? game.enemy : game.enemy.board[targetIdx];
     
     // Урон
-    target.hp = (type === 'hero' ? target.hp : target.currentHp) - attacker.atk;
-    
-    // Применяем урон
-    if (type === 'hero') game.enemy.hp = target.hp;
-    else target.currentHp = target.hp;
+    if (type === 'hero') game.enemy.hp -= attacker.atk;
+    else target.currentHp -= attacker.atk;
 
     // Ответный урон
     if (type !== 'hero') attacker.currentHp -= target.atk;
     
     attacker.sleep = true;
-    tg.HapticFeedback.impactOccurred('medium');
+    tg.HapticFeedback.impactOccurred('heavy');
     resolveCombat();
 }
 
@@ -177,79 +206,88 @@ function resolveCombat() {
     else if (game.player.hp <= 0) loseGame();
 }
 
-// === AI (УЛУЧШЕННЫЙ) ===
+// === ИСКУССТВЕННЫЙ ИНТЕЛЛЕКТ (ИСПРАВЛЕННЫЙ) ===
 function endTurn() {
     if (!game.playerTurn) return;
     game.playerTurn = false;
-    updateUI();
+    document.getElementById('end-turn').innerText = "ВРАГ...";
+    document.getElementById('end-turn').disabled = true;
     
-    // Даем небольшую паузу перед ходом врага
-    setTimeout(() => {
-        // 1. ИИ Разыгрывает карты
-        const ai = game.enemy;
-        // Сортировка: сначала дорогие карты
-        ai.hand.sort((a,b) => b.cost - a.cost);
-        
-        // Жадный алгоритм розыгрыша
-        // Пытаемся разыграть карты, пока есть мана и место
-        let hasPlayed = true;
-        while (hasPlayed && ai.board.length < 5) {
-            hasPlayed = false;
-            for (let i = 0; i < ai.hand.length; i++) {
-                if (ai.hand[i].cost <= ai.mana) {
-                    ai.mana -= ai.hand[i].cost;
-                    ai.board.push({ ...ai.hand[i], sleep: true });
-                    ai.hand.splice(i, 1);
-                    hasPlayed = true;
-                    break; // Начинаем цикл заново, так как индексы сместились
-                }
+    game.enemy.board.forEach(c => c.sleep = false); // Будим врагов
+
+    // Запускаем цепочку ходов ИИ
+    setTimeout(aiPlayPhase, 800);
+}
+
+function aiPlayPhase() {
+    const ai = game.enemy;
+    
+    // Пытаемся разыграть карты (от дорогих к дешевым)
+    ai.hand.sort((a,b) => b.cost - a.cost);
+    
+    let canPlay = true;
+    while(canPlay && ai.board.length < 5) {
+        canPlay = false;
+        for(let i=0; i<ai.hand.length; i++) {
+            if(ai.hand[i].cost <= ai.mana) {
+                ai.mana -= ai.hand[i].cost;
+                ai.board.push({ ...ai.hand[i], sleep: true });
+                ai.hand.splice(i, 1);
+                canPlay = true; // Карта сыграна, пробуем еще
+                break; 
             }
         }
-        updateUI();
+    }
+    updateUI();
+    
+    // Переход к атаке
+    setTimeout(aiAttackPhase, 1000);
+}
 
-        // 2. ИИ Атакует (через 600мс)
+function aiAttackPhase() {
+    const aiBoard = game.enemy.board;
+    const activeUnits = aiBoard.filter(u => !u.sleep);
+    
+    // Если атаковать некем - сразу передаем ход
+    if (activeUnits.length === 0) {
+        startPlayerTurn();
+        return;
+    }
+
+    let attackDelay = 0;
+
+    activeUnits.forEach(attacker => {
         setTimeout(() => {
-            ai.board.forEach(attacker => {
-                if (attacker.sleep) return;
+            if(attacker.currentHp <= 0) return; // Умер до атаки
 
-                // Логика выбора цели:
-                // 1. Ищем выгодный размен (убить карту игрока и выжить)
-                let bestTarget = -1;
-                let bestScore = -100;
-
-                game.player.board.forEach((defender, idx) => {
-                    let score = 0;
-                    // Если убиваем врага
-                    if (attacker.atk >= defender.currentHp) score += 50;
-                    // Если выживаем
-                    if (attacker.currentHp > defender.atk) score += 20;
-                    // Если размен по мане выгодный (убили дорогого дешевым)
-                    if (defender.cost > attacker.cost) score += 10;
-
-                    if (score > bestScore) {
-                        bestScore = score;
-                        bestTarget = idx;
-                    }
-                });
-
-                // Если нашли хорошую цель (score > 40), бьем её. Иначе - в лицо.
-                if (bestTarget !== -1 && bestScore > 40) {
-                    const def = game.player.board[bestTarget];
-                    def.currentHp -= attacker.atk;
-                    attacker.currentHp -= def.atk;
-                } else {
-                    game.player.hp -= attacker.atk;
+            // Простой алгоритм: если можем убить кого-то выгодно - бьем, иначе в лицо
+            let targetIdx = -1;
+            
+            // Ищем цель для размена
+            game.player.board.forEach((def, idx) => {
+                // Если убиваем с одного удара и выживаем
+                if (attacker.atk >= def.currentHp && attacker.currentHp > def.atk) {
+                    targetIdx = idx;
                 }
             });
 
-            attacker.sleep = false;
-            resolveCombat();
+            if (targetIdx !== -1) {
+                const def = game.player.board[targetIdx];
+                def.currentHp -= attacker.atk;
+                attacker.currentHp -= def.atk;
+            } else {
+                game.player.hp -= attacker.atk;
+            }
             
-            // 3. Передача хода (через 500мс)
-            setTimeout(startPlayerTurn, 500);
+            attacker.sleep = true;
+            resolveCombat();
+        }, attackDelay);
+        
+        attackDelay += 800; // Пауза между ударами
+    });
 
-        }, 600);
-    }, 500);
+    // После всех атак передаем ход
+    setTimeout(startPlayerTurn, attackDelay + 500);
 }
 
 function startPlayerTurn() {
@@ -261,13 +299,14 @@ function startPlayerTurn() {
     
     draw('player', 1);
     draw('enemy', 1);
+    
     game.player.board.forEach(c => c.sleep = false);
-    game.enemy.board.forEach(c => c.sleep = false);
+    
     game.playerTurn = true;
     updateUI();
 }
 
-// === UI RENDER ===
+// === ОТРИСОВКА ===
 function updateUI() {
     document.getElementById('player-hp').innerText = game.player.hp;
     document.getElementById('enemy-hp').innerText = game.enemy.hp;
@@ -275,8 +314,15 @@ function updateUI() {
     document.getElementById('max-mana').innerText = game.player.maxMana;
     
     const btn = document.getElementById('end-turn');
-    btn.innerText = game.playerTurn ? "ЗАКОНЧИТЬ" : "ВРАГ...";
-    btn.disabled = !game.playerTurn;
+    if (game.playerTurn) {
+        btn.innerText = "ЗАКОНЧИТЬ";
+        btn.disabled = false;
+        btn.style.background = "#00ff88";
+    } else {
+        btn.innerText = "ВРАГ...";
+        btn.disabled = true;
+        btn.style.background = "#444";
+    }
 
     renderContainer('player-hand', game.player.hand, true);
     renderContainer('enemy-hand', game.enemy.hand, false);
@@ -322,7 +368,7 @@ function renderBoard(id, list, isPlayer) {
     });
 }
 
-// === WIN/LOSE ===
+// === ФИНАЛ ===
 function winGame() {
     document.getElementById('modal').classList.remove('hidden');
     document.getElementById('gift-container').classList.remove('hidden');
