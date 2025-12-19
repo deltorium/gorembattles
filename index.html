@@ -9,10 +9,9 @@
 </head>
 <body>
     <div id="app">
-        <!-- ЗОНА ВРАГА (Drop Zone для атаки) -->
+        <!-- ЗОНА ВРАГА -->
         <div class="zone enemy-zone" id="enemy-hero-zone">
             <div class="hero enemy-hero">
-                <!-- Алексей (Демон форма) -->
                 <div class="hero-avatar" style="background-image: url('https://i.postimg.cc/Y9tpYZMp/Vox_2528Mostly_Demon_Form_2529_removebg_preview.png')"></div>
                 <div class="hero-stats">
                     <span class="hp-bar">💀 <span id="enemy-hp">40</span></span>
@@ -23,19 +22,18 @@
 
         <!-- ПОЛЕ БОЯ -->
         <div class="battlefield">
-            <div class="board-row" id="enemy-board"></div> <!-- Враги -->
-            <div class="board-row" id="player-board"></div> <!-- Drop Zone для розыгрыша -->
+            <div class="board-row" id="enemy-board"></div>
+            <div class="board-row" id="player-board"></div>
         </div>
 
         <!-- ЗОНА ИГРОКА -->
         <div class="zone player-zone">
             <div class="controls">
-                <div class="mana-crystal">💎 <span id="player-mana">1</span>/<span id="max-mana">1</span></div>
-                <button id="end-turn" onclick="endTurn()">ЗАКОНЧИТЬ</button>
+                <div class="mana-crystal">💎 <span id="player-mana">0</span>/<span id="max-mana">0</span></div>
+                <button id="end-turn" onclick="endTurn()">ХОД</button>
             </div>
             
             <div class="hero player-hero">
-                <!-- Горем Бот -->
                 <div class="hero-avatar" style="background-image: url('https://i.postimg.cc/ZR8nGvXF/photo_2025_11_16_21_52_10.jpg')"></div>
                 <div class="hero-stats">
                     <span class="hp-bar">❤️ <span id="player-hp">30</span></span>
@@ -48,12 +46,11 @@
         <!-- ДРАГ-ПРОКСИ (Карта, которая летает за пальцем) -->
         <div id="drag-proxy" class="card hidden"></div>
 
-        <!-- ЭКРАН ПОБЕДЫ / ПОРАЖЕНИЯ -->
+        <!-- ЭКРАН ФИНАЛА -->
         <div id="modal" class="hidden">
             <div class="modal-content">
                 <h1 id="modal-title">ПОБЕДА!</h1>
                 
-                <!-- Анимация подарка -->
                 <div id="gift-container" class="hidden">
                     <div class="gift-box" onclick="openGift()">🎁</div>
                     <div id="card-reveal" class="hidden">
@@ -66,7 +63,7 @@
 
                 <p id="modal-desc"></p>
                 <button id="restart-btn" onclick="location.reload()">ЗАНОВО</button>
-                <button id="claim-btn" class="hidden" onclick="closeApp()">ЗАБРАТЬ И ВЫЙТИ</button>
+                <button id="claim-btn" class="hidden" onclick="tg.close()">ЗАБРАТЬ</button>
             </div>
         </div>
     </div>
