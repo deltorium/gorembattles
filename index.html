@@ -9,32 +9,34 @@
 </head>
 <body>
     <div id="app">
-        <!-- ВРАГ (Алексей или Лже-Санта) -->
-        <div class="zone enemy-zone">
+        <!-- ЗОНА ВРАГА (Drop Zone для атаки) -->
+        <div class="zone enemy-zone" id="enemy-hero-zone">
             <div class="hero enemy-hero">
-                <div class="hero-avatar" style="background-image: url('https://i.postimg.cc/FsTD4L7L/santaaleksey-removebg-preview.png')"></div>
+                <!-- Алексей (Демон форма) -->
+                <div class="hero-avatar" style="background-image: url('https://i.postimg.cc/Y9tpYZMp/Vox_2528Mostly_Demon_Form_2529_removebg_preview.png')"></div>
                 <div class="hero-stats">
-                    <span class="hp-bar">❤️ <span id="enemy-hp">30</span></span>
+                    <span class="hp-bar">💀 <span id="enemy-hp">40</span></span>
                 </div>
             </div>
-            <div class="hand" id="enemy-hand"></div> <!-- Карты врага -->
+            <div class="hand" id="enemy-hand"></div>
         </div>
 
         <!-- ПОЛЕ БОЯ -->
         <div class="battlefield">
-            <div class="board-row" id="enemy-board"></div>
-            <div class="board-row" id="player-board"></div>
+            <div class="board-row" id="enemy-board"></div> <!-- Враги -->
+            <div class="board-row" id="player-board"></div> <!-- Drop Zone для розыгрыша -->
         </div>
 
-        <!-- ИГРОК -->
+        <!-- ЗОНА ИГРОКА -->
         <div class="zone player-zone">
             <div class="controls">
-                <div class="mana-crystal">💎 <span id="player-mana">0</span>/<span id="max-mana">0</span> MTC</div>
+                <div class="mana-crystal">💎 <span id="player-mana">1</span>/<span id="max-mana">1</span></div>
                 <button id="end-turn" onclick="endTurn()">ЗАКОНЧИТЬ</button>
             </div>
             
             <div class="hero player-hero">
-                <div class="hero-avatar" style="background-image: url('https://i.postimg.cc/0Q33mdRs/photo-2025-11-30-02-08-33-removebg-preview.png')"></div>
+                <!-- Горем Бот -->
+                <div class="hero-avatar" style="background-image: url('https://i.postimg.cc/ZR8nGvXF/photo_2025_11_16_21_52_10.jpg')"></div>
                 <div class="hero-stats">
                     <span class="hp-bar">❤️ <span id="player-hp">30</span></span>
                 </div>
@@ -43,12 +45,28 @@
             <div class="hand" id="player-hand"></div>
         </div>
 
-        <!-- Всплывающее окно -->
+        <!-- ДРАГ-ПРОКСИ (Карта, которая летает за пальцем) -->
+        <div id="drag-proxy" class="card hidden"></div>
+
+        <!-- ЭКРАН ПОБЕДЫ / ПОРАЖЕНИЯ -->
         <div id="modal" class="hidden">
             <div class="modal-content">
                 <h1 id="modal-title">ПОБЕДА!</h1>
-                <p id="modal-desc">Вы защитили сервер от Алексея.</p>
-                <button onclick="location.reload()">ЕЩЁ РАЗ</button>
+                
+                <!-- Анимация подарка -->
+                <div id="gift-container" class="hidden">
+                    <div class="gift-box" onclick="openGift()">🎁</div>
+                    <div id="card-reveal" class="hidden">
+                        <div class="card-glow"></div>
+                        <img id="reward-img" src="" alt="Reward">
+                        <h3 id="reward-name">Карта</h3>
+                        <p>Добавлено в инвентарь!</p>
+                    </div>
+                </div>
+
+                <p id="modal-desc"></p>
+                <button id="restart-btn" onclick="location.reload()">ЗАНОВО</button>
+                <button id="claim-btn" class="hidden" onclick="closeApp()">ЗАБРАТЬ И ВЫЙТИ</button>
             </div>
         </div>
     </div>
