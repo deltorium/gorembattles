@@ -1,97 +1,113 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@900&display=swap');
 
 body {
-    margin: 0; background: #121214; color: white;
-    font-family: 'Roboto', sans-serif; overflow: hidden;
-    user-select: none; -webkit-user-select: none;
-    touch-action: none; /* Важно для Drag&Drop */
+    margin: 0;
+    background: #0f0f13;
+    color: white;
+    font-family: 'Roboto', sans-serif;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none; /* Важно для телефонов */
 }
 
 #app {
-    display: flex; flex-direction: column; height: 100vh;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
     background: radial-gradient(circle at center, #1f1f2e 0%, #000 100%);
 }
 
 /* ЗОНЫ */
 .zone { padding: 5px; display: flex; align-items: center; position: relative; }
-.enemy-zone { flex-direction: row-reverse; height: 15vh; border-bottom: 1px solid #333; }
-.player-zone { flex-direction: row; height: 18vh; border-top: 1px solid #333; background: rgba(0,0,0,0.3); }
-.battlefield { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; padding: 10px; gap: 10px; }
+.enemy-zone { flex-direction: row-reverse; height: 16vh; border-bottom: 1px solid #333; }
+.player-zone { flex-direction: row; height: 20vh; border-top: 1px solid #333; background: rgba(0,0,0,0.2); }
+.battlefield { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; padding: 5px; gap: 8px; }
 
 /* ГЕРОИ */
-.hero { width: 70px; height: 70px; position: relative; flex-shrink: 0; margin: 0 10px; }
+.hero { width: 60px; height: 60px; position: relative; flex-shrink: 0; margin: 0 5px; }
 .hero-avatar {
     width: 100%; height: 100%; border-radius: 50%;
     background-size: cover; background-position: center;
     border: 2px solid #aaa; box-shadow: 0 0 10px rgba(0,0,0,0.5);
-    transition: transform 0.2s;
 }
-.hero.target-highlight .hero-avatar { border-color: red; transform: scale(1.1); } /* Подсветка цели */
+.hero.target-highlight .hero-avatar { border-color: #ff0000; box-shadow: 0 0 15px red; transform: scale(1.1); }
 .hero-stats {
-    position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%);
-    background: #000; padding: 2px 6px; border-radius: 8px; border: 1px solid #fff;
-    font-size: 12px; z-index: 2; white-space: nowrap;
+    position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+    background: #000; padding: 1px 4px; border-radius: 6px; border: 1px solid #fff;
+    font-size: 11px; z-index: 5; white-space: nowrap;
 }
 
-/* КАРТЫ */
+/* КАРТЫ - Оптимизированный размер */
 .hand {
     flex-grow: 1; display: flex; justify-content: center; align-items: center;
-    overflow-x: visible; /* Карты могут торчать */
+    height: 100%;
+    margin-left: 10px;
 }
 
 .card {
-    width: 85px; height: 120px;
-    background: #2b2b2b; border: 2px solid #555; border-radius: 6px;
-    position: relative; margin: 0 2px;
+    width: 64px;  /* Компактная ширина */
+    height: 90px; /* Компактная высота */
+    background: #2b2b2b;
+    border: 2px solid #555;
+    border-radius: 5px;
+    margin-left: -12px; /* Карты накладываются друг на друга */
+    position: relative;
     background-size: cover; background-position: center;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.6);
-    transition: transform 0.2s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.8);
     flex-shrink: 0;
 }
-/* Статы на карте */
-.card-stats-overlay {
-    position: absolute; bottom: 0; width: 100%; height: 30px;
-    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
-    border-radius: 0 0 6px 6px;
-}
-.stat-val {
-    position: absolute; bottom: 2px; width: 24px; height: 24px;
-    border-radius: 50%; text-align: center; line-height: 24px;
-    font-size: 14px; font-weight: bold; border: 1px solid #fff; color: white;
-}
-.c-cost { top: -8px; left: -8px; background: #00aaff; }
-.c-atk { bottom: -5px; left: -5px; background: #ffaa00; }
-.c-hp { bottom: -5px; right: -5px; background: #ff4444; }
 
-/* Состояние карт */
-.player-zone .card:not(.dragging):hover { transform: translateY(-20px) scale(1.1); z-index: 100; border-color: #0f0; }
-.card.dragging { position: fixed; z-index: 9999; pointer-events: none; opacity: 0.9; transform: scale(1.1); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-.card.exhausted { filter: grayscale(1) brightness(0.7); }
-.card.can-attack { box-shadow: 0 0 10px #00ff00; animation: pulse 1.5s infinite; }
+/* Показатели карт - Крупные и читаемые */
+.stat-val {
+    position: absolute;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    text-align: center; line-height: 20px;
+    font-size: 13px; font-weight: 900; 
+    color: #fff; text-shadow: 1px 1px 0 #000;
+    border: 2px solid #fff;
+    z-index: 2;
+}
+.c-cost { top: -6px; left: -6px; background: #0088ff; }
+.c-atk { bottom: -6px; left: -6px; background: #ffaa00; }
+.c-hp { bottom: -6px; right: -6px; background: #ff2222; }
+
+/* Состояния */
+.player-zone .card:not(.dragging):hover { transform: translateY(-15px) scale(1.2); z-index: 100; border-color: #0f0; }
+.card.dragging { position: fixed; z-index: 9999; pointer-events: none; opacity: 0.9; transform: scale(1.2); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+.card.exhausted { filter: grayscale(1) brightness(0.6); }
+.card.can-attack { box-shadow: 0 0 8px 2px #00ff00; border-color: #00ff00; }
 
 /* ПОЛЕ */
 .board-row {
-    height: 130px; border-radius: 8px;
-    display: flex; justify-content: center; align-items: center; gap: 5px;
-    border: 1px dashed rgba(255,255,255,0.1);
+    height: 100px; border-radius: 8px;
+    display: flex; justify-content: center; align-items: center; gap: 6px;
+    border: 1px dashed rgba(255,255,255,0.15);
     transition: background 0.2s;
 }
-.board-row.highlight { background: rgba(0, 255, 0, 0.1); border-color: #0f0; } /* Подсветка куда класть */
+.board-row.highlight { background: rgba(0, 255, 0, 0.15); border-color: #0f0; }
 
 /* UI */
-.controls { position: absolute; top: -40px; right: 10px; display: flex; gap: 10px; }
-button { background: #00ff88; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; }
-button:disabled { background: #444; color: #888; }
-.mana-crystal { background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 4px; border: 1px solid #00aaff; color: #00aaff; }
+.controls { position: absolute; top: -35px; right: 5px; display: flex; gap: 8px; align-items: center; }
+button {
+    background: #00ff88; border: none; padding: 6px 14px;
+    border-radius: 20px; font-weight: bold; font-size: 12px;
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+}
+button:disabled { background: #444; color: #888; box-shadow: none; }
+.mana-crystal { 
+    background: rgba(0,0,0,0.8); padding: 4px 8px; 
+    border-radius: 12px; border: 1px solid #00aaff; 
+    color: #00aaff; font-size: 12px; font-weight: bold;
+}
 
-/* МОДАЛКА И ПОДАРОК */
+/* МОДАЛКА */
 .hidden { display: none !important; }
-#modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 2000; display: flex; justify-content: center; align-items: center; flex-direction: column;}
-.modal-content { text-align: center; width: 90%; }
+#modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+.modal-content { text-align: center; width: 90%; color: white; }
 
 .gift-box { font-size: 80px; cursor: pointer; animation: bounce 2s infinite; }
 @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
-@keyframes pulse { 0% {box-shadow: 0 0 5px #0f0;} 50% {box-shadow: 0 0 15px #0f0;} 100% {box-shadow: 0 0 5px #0f0;} }
 
-#card-reveal img { width: 180px; border-radius: 10px; border: 3px solid gold; box-shadow: 0 0 30px gold; animation: popIn 0.5s ease-out; }
-@keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+#card-reveal img { width: 160px; border-radius: 10px; border: 3px solid gold; box-shadow: 0 0 30px gold; margin-top: 10px; }
