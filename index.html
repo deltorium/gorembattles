@@ -3,303 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GOREM TERMINAL</title>
+    <title>GOREM OS</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@400;700&display=swap');
-
-        :root {
-            --primary: #00ff88;
-            --secondary: #00aaff;
-            --bg: #0f0f13;
-            --card-bg: #1a1a2e;
-            --text: #ffffff;
-            --danger: #ff4444;
-        }
-
-        body {
-            margin: 0;
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'Roboto', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
+        :root { --main: #00ff88; --bg: #121214; --card: #1e1e24; }
+        body { margin: 0; background: var(--bg); color: white; font-family: sans-serif; padding-bottom: 70px; }
+        
         /* HEADER */
-        .header {
-            background: linear-gradient(180deg, rgba(0,255,136,0.1) 0%, transparent 100%);
-            padding: 20px;
-            text-align: center;
-            border-bottom: 1px solid #333;
-        }
-        .user-avatar {
-            width: 80px; height: 80px;
-            border-radius: 50%;
-            border: 3px solid var(--primary);
-            margin: 0 auto 10px;
-            background: #333; /* Placeholder */
-            display: flex; align-items: center; justify-content: center;
-            font-size: 30px;
-        }
-        .user-name { font-family: 'Orbitron', sans-serif; font-size: 20px; color: var(--primary); }
-        .user-firm { font-size: 12px; color: #888; margin-top: 5px; }
-
-        /* STATS GRID */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            padding: 15px;
-        }
-        .stat-card {
-            background: var(--card-bg);
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid #333;
-            text-align: center;
-        }
-        .stat-value { font-size: 18px; font-weight: bold; margin-top: 5px; }
-        .stat-label { font-size: 12px; color: #aaa; }
-        .coin { color: #ffd700; }
-        .mtc { color: var(--secondary); }
-
+        .header { padding: 20px; background: linear-gradient(180deg, rgba(0,255,136,0.1), transparent); text-align: center; }
+        .balance { font-size: 32px; font-weight: bold; margin: 10px 0; }
+        .sub-balance { color: #888; font-size: 14px; }
+        
         /* TABS */
-        .tabs {
-            display: flex;
-            overflow-x: auto;
-            padding: 10px;
-            gap: 10px;
-            border-bottom: 1px solid #333;
-        }
-        .tab-btn {
-            background: transparent;
-            border: 1px solid #555;
-            color: #fff;
-            padding: 8px 16px;
-            border-radius: 20px;
-            white-space: nowrap;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .tab-btn.active {
-            background: var(--primary);
-            color: #000;
-            border-color: var(--primary);
-            font-weight: bold;
-        }
-
+        .tab-bar { position: fixed; bottom: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #333; }
+        .tab-btn { background: none; border: none; color: #555; font-size: 24px; cursor: pointer; }
+        .tab-btn.active { color: var(--main); }
+        
         /* SECTIONS */
-        .section { display: none; padding: 15px; padding-bottom: 80px; }
-        .section.active { display: block; }
-        .section-title { font-family: 'Orbitron', sans-serif; margin-bottom: 15px; border-left: 3px solid var(--primary); padding-left: 10px;}
+        .page { display: none; padding: 15px; }
+        .page.active { display: block; }
+        
+        /* CARDS & ITEMS */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .item-card { background: var(--card); padding: 10px; border-radius: 10px; text-align: center; border: 1px solid #333; }
+        .btn { width: 100%; padding: 10px; background: var(--main); border: none; border-radius: 8px; font-weight: bold; margin-top: 5px; cursor: pointer; color: black; }
+        
+        /* INVENTORY */
+        .inv-item { display: flex; align-items: center; background: var(--card); margin-bottom: 5px; padding: 5px; border-radius: 5px; }
+        .inv-img { width: 40px; height: 40px; background: #333; border-radius: 4px; margin-right: 10px; background-size: cover; }
 
-        /* ACTIONS */
-        .action-btn {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 10px;
-            background: var(--card-bg);
-            border: 1px solid var(--primary);
-            color: white;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .action-btn:active { background: var(--primary); color: black; }
-        .btn-price { background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 5px; font-size: 12px; }
-
-        /* SHOP GRID */
-        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .shop-item {
-            background: var(--card-bg); border: 1px solid #444;
-            border-radius: 10px; padding: 10px; text-align: center;
-        }
-        .shop-item img { width: 50px; height: 50px; margin-bottom: 5px; }
-        .buy-btn {
-            background: var(--secondary); border: none; color: white;
-            width: 100%; padding: 8px; border-radius: 5px; margin-top: 5px; cursor: pointer;
-        }
-
-        /* CRYPTO INPUT */
-        .crypto-input {
-            width: 100%; padding: 10px; background: #222; border: 1px solid #555;
-            color: white; border-radius: 5px; margin-bottom: 10px; box-sizing: border-box;
-        }
-        .crypto-actions { display: flex; gap: 10px; }
-        .crypto-btn { flex: 1; padding: 10px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
-        .btn-buy { background: #00ff88; color: black; }
-        .btn-sell { background: #ff4444; color: white; }
-
-        /* GAMES LINK */
-        .game-card {
-            background: linear-gradient(45deg, #2b1055, #7597de);
-            padding: 20px; border-radius: 15px;
-            text-align: center; margin-bottom: 15px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-
+        /* LOADING */
+        #loader { position: fixed; top:0; left:0; width:100%; height:100%; background: #000; display: flex; justify-content: center; align-items: center; z-index: 999; }
     </style>
 </head>
 <body>
 
+    <div id="loader">Loading Gorem OS...</div>
+
+    <!-- HEADER -->
     <div class="header">
-        <div class="user-avatar" id="avatar">👤</div>
-        <div class="user-name" id="username">Loading...</div>
-        <div class="user-firm" id="firm">Нет фирмы</div>
+        <div id="user-name">User</div>
+        <div class="balance"><span id="bal">0</span> 🪙</div>
+        <div class="sub-balance"><span id="crypto">0</span> MTC | <span id="firm">Нет фирмы</span></div>
     </div>
 
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-label">Баланс</div>
-            <div class="stat-value coin"><span id="balance">0</span> 🪙</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Крипто</div>
-            <div class="stat-value mtc"><span id="crypto">0</span> MTC</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Карты</div>
-            <div class="stat-value"><span id="cards">0</span> 🃏</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Wipes</div>
-            <div class="stat-value"><span id="wipes">0</span> ☢️</div>
+    <!-- MAIN PAGE -->
+    <div id="home" class="page active">
+        <h3>Действия</h3>
+        <button class="btn" onclick="api('farm')" style="height: 60px; font-size: 18px;">⛏️ ФАРМИТЬ (+100)</button>
+        <br><br>
+        <h3>Игры</h3>
+        <div class="grid">
+            <div class="item-card" onclick="location.href='game.html'">
+                <h1>⚔️</h1>
+                <div>Gorem Battles</div>
+            </div>
+            <div class="item-card" onclick="alert('Скоро!')">
+                <h1>🎲</h1>
+                <div>Рулетка</div>
+            </div>
         </div>
     </div>
 
-    <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('main')">Главная</button>
-        <button class="tab-btn" onclick="switchTab('shop')">Магазин</button>
-        <button class="tab-btn" onclick="switchTab('crypto')">Биржа</button>
-        <button class="tab-btn" onclick="switchTab('games')">Игры</button>
-    </div>
-
-    <!-- MAIN TAB -->
-    <div id="main" class="section active">
-        <h2 class="section-title">Действия</h2>
-        <button class="action-btn" onclick="sendAction('farm')">
-            ⛏️ Ежедневный Фарм
-            <span class="btn-price">FREE</span>
-        </button>
-        <button class="action-btn" onclick="tg.close()">
-            ❌ Закрыть
-        </button>
-    </div>
-
-    <!-- SHOP TAB -->
-    <div id="shop" class="section">
-        <h2 class="section-title">Кейсы</h2>
-        <div class="shop-grid">
-            <div class="shop-item">
-                <div style="font-size:30px">📦</div>
+    <!-- SHOP PAGE -->
+    <div id="shop" class="page">
+        <h3>Магазин Кейсов</h3>
+        <div class="grid">
+            <div class="item-card">
+                <h3>📦</h3>
                 <div>Common</div>
-                <div style="font-size:12px; color:#aaa">50 🪙</div>
-                <button class="buy-btn" onclick="buyCase('common')">Купить</button>
+                <div style="color:#aaa">50 🪙</div>
+                <button class="btn" onclick="buyCase('common')">Купить</button>
             </div>
-            <div class="shop-item">
-                <div style="font-size:30px">🟦</div>
+            <div class="item-card">
+                <h3>🟦</h3>
                 <div>Rare</div>
-                <div style="font-size:12px; color:#aaa">150 🪙</div>
-                <button class="buy-btn" onclick="buyCase('rare')">Купить</button>
+                <div style="color:#aaa">150 🪙</div>
+                <button class="btn" onclick="buyCase('rare')">Купить</button>
             </div>
-            <div class="shop-item">
-                <div style="font-size:30px">🟪</div>
-                <div>Premium</div>
-                <div style="font-size:12px; color:#aaa">300 🪙</div>
-                <button class="buy-btn" onclick="buyCase('premium')">Купить</button>
-            </div>
-            <div class="shop-item">
-                <div style="font-size:30px">🟧</div>
+            <div class="item-card">
+                <h3>🟧</h3>
                 <div>Mythic</div>
-                <div style="font-size:12px; color:#aaa">1000 🪙</div>
-                <button class="buy-btn" onclick="buyCase('mythic')">Купить</button>
+                <div style="color:#aaa">1000 🪙</div>
+                <button class="btn" onclick="buyCase('mythic')">Купить</button>
+            </div>
+             <div class="item-card">
+                <h3>💼</h3>
+                <div>Business</div>
+                <div style="color:#aaa">15000 🪙</div>
+                <button class="btn" onclick="buyCase('business')">Купить</button>
             </div>
         </div>
     </div>
 
-    <!-- CRYPTO TAB -->
-    <div id="crypto-tab" class="section">
-        <h2 class="section-title">MTC Exchange</h2>
-        <input type="number" id="crypto-amount" class="crypto-input" placeholder="Количество">
-        <div class="crypto-actions">
-            <button class="crypto-btn btn-buy" onclick="tradeCrypto('buy')">КУПИТЬ</button>
-            <button class="crypto-btn btn-sell" onclick="tradeCrypto('sell')">ПРОДАТЬ</button>
+    <!-- CRYPTO PAGE -->
+    <div id="crypto-page" class="page">
+        <h3>Биржа MTC</h3>
+        <div class="item-card" style="margin-bottom: 20px;">
+            <h1>💎 <span id="mtc-price">...</span></h1>
+            <div>Текущий курс</div>
         </div>
-        <p style="font-size: 12px; color: #888; margin-top: 10px;">Курс меняется в боте. Здесь быстрая сделка.</p>
+        <input type="number" id="trade-amount" placeholder="Сумма" style="width:100%; padding:10px; margin-bottom:10px; box-sizing:border-box;">
+        <div class="grid">
+            <button class="btn" onclick="trade('buy')">КУПИТЬ</button>
+            <button class="btn" onclick="trade('sell')" style="background:#ff4444; color:white">ПРОДАТЬ</button>
+        </div>
     </div>
 
-    <!-- GAMES TAB -->
-    <div id="games" class="section">
-        <h2 class="section-title">Развлечения</h2>
-        <div class="game-card" onclick="location.href='game.html'"> <!-- ССЫЛКА НА ТВОЮ ИГРУ -->
-            <div style="font-size: 40px;">⚔️</div>
-            <h3>GOREM BATTLES</h3>
-            <p>Карточная битва с Алексеем</p>
-        </div>
-        <div class="game-card" style="background: linear-gradient(45deg, #550000, #aa0000);" onclick="sendAction('roulette')">
-            <div style="font-size: 40px;">🔫</div>
-            <h3>Рулетка</h3>
-            <p>Рискни всем (в чате)</p>
-        </div>
+    <!-- INVENTORY PAGE -->
+    <div id="inventory" class="page">
+        <h3>Ваши карты</h3>
+        <div id="inv-list"></div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="nav('home')">🏠</button>
+        <button class="tab-btn" onclick="nav('shop')">🛒</button>
+        <button class="tab-btn" onclick="nav('crypto-page')">📈</button>
+        <button class="tab-btn" onclick="nav('inventory')">🎒</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
-
-        // Парсинг данных из URL (которые передал бот)
-        const urlParams = new URLSearchParams(window.location.search);
-        const dataParam = urlParams.get('data');
         
-        if (dataParam) {
+        // !!! ЗАМЕНИ НА СВОЙ URL НА RENDER (например https://my-bot.onrender.com) !!!
+        const API_URL = "https://my-super-bot-1gwh.onrender.com"; 
+
+        const user = tg.initDataUnsafe.user;
+        let userData = {};
+
+        async function init() {
+            if(!user) { alert("Запустите через Телеграм!"); return; }
+            
+            // Загрузка данных
             try {
-                const userData = JSON.parse(decodeURIComponent(dataParam)); // или просто JSON.parse если не энкодили
-                document.getElementById('username').innerText = userData.name;
-                document.getElementById('avatar').innerText = userData.name[0];
-                document.getElementById('balance').innerText = userData.bal;
-                document.getElementById('crypto').innerText = userData.mtc;
-                document.getElementById('cards').innerText = userData.inv_count;
-                document.getElementById('wipes').innerText = userData.wf;
-                document.getElementById('firm').innerText = userData.firm !== "Нет" ? "🏢 " + userData.firm : "Безработный";
-            } catch (e) {
-                console.error("Error parsing data", e);
+                const res = await fetch(`${API_URL}/api/get_user`, {
+                    method: 'POST',
+                    body: JSON.stringify({ user_id: user.id, first_name: user.first_name })
+                });
+                const data = await res.json();
+                
+                userData = data;
+                renderData();
+                document.getElementById('loader').style.display = 'none';
+            } catch(e) {
+                alert("Ошибка соединения с сервером: " + e);
             }
         }
 
-        function switchTab(tabId) {
-            document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        function renderData() {
+            document.getElementById('user-name').innerText = userData.user.first_name;
+            document.getElementById('bal').innerText = userData.user.balance;
+            document.getElementById('crypto').innerText = userData.user.crypto_balance;
+            document.getElementById('mtc-price').innerText = userData.crypto_price;
             
-            // Фикс ID для крипты
-            const realId = tabId === 'crypto' ? 'crypto-tab' : tabId;
-            document.getElementById(realId).classList.add('active');
-            
-            // Находим кнопку и активируем
-            event.target.classList.add('active');
+            const f = userData.firm;
+            document.getElementById('firm').innerText = f ? f.name : "Безработный";
+
+            // Инвентарь
+            const invList = document.getElementById('inv-list');
+            invList.innerHTML = "";
+            userData.inventory.forEach(item => {
+                invList.innerHTML += `
+                    <div class="inv-item">
+                        <div class="inv-img" style="background-image: url('${item.image_url}')"></div>
+                        <div>
+                            <div style="font-weight:bold">${item.name} x${item.count}</div>
+                            <div style="font-size:12px; color:#aaa">${item.rarity}</div>
+                        </div>
+                    </div>
+                `;
+            });
         }
 
-        function sendAction(actionName) {
-            tg.sendData(JSON.stringify({ action: actionName }));
-            tg.close(); // Закрываем, чтобы пользователь увидел результат в чате
+        async function api(endpoint, payload={}) {
+            tg.MainButton.showProgress();
+            payload.user_id = user.id;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/${endpoint}`, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+                
+                tg.MainButton.hideProgress();
+                
+                if (result.success) {
+                    tg.showAlert(result.message);
+                    // Обновляем локальные данные (можно перезапросить init, но для скорости так)
+                    if(result.balance !== undefined) userData.user.balance = result.balance;
+                    if(result.crypto !== undefined) userData.user.crypto_balance = result.crypto;
+                    if(result.card) {
+                        // Добавить карту в инвентарь визуально (для простоты перезагрузим все)
+                        init(); 
+                    }
+                    renderData();
+                } else {
+                    tg.showAlert("Ошибка: " + result.message);
+                }
+            } catch(e) {
+                tg.MainButton.hideProgress();
+                tg.showAlert("Ошибка сети");
+            }
         }
 
         function buyCase(type) {
-            tg.sendData(JSON.stringify({ action: 'buy_case', type: type }));
-            tg.close();
+            tg.showConfirm(`Купить ${type} кейс?`, (ok) => {
+                if(ok) api('buy_case', { type: type });
+            });
         }
 
-        function tradeCrypto(op) {
-            const amount = document.getElementById('crypto-amount').value;
-            if(!amount || amount <= 0) {
-                tg.showAlert("Введите число!");
-                return;
-            }
-            tg.sendData(JSON.stringify({ action: 'exchange', op: op, amount: amount }));
-            tg.close();
+        function trade(op) {
+            const amount = document.getElementById('trade-amount').value;
+            if(!amount) return;
+            api('crypto', { op: op, amount: amount });
         }
+
+        function nav(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        init();
     </script>
 </body>
 </html>
