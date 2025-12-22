@@ -4,279 +4,336 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>GOREM OS</title>
-    <!-- Подключаем скрипт Telegram самым первым -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@400;700&display=swap');
+        :root { --main: #00ff88; --bg: #0f0f13; --card: #1e1e24; --text: #fff; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: sans-serif; padding-bottom: 70px; }
+        
+        .header { padding: 20px; background: linear-gradient(180deg, rgba(0,255,136,0.1), transparent); text-align: center; border-bottom: 1px solid #333; }
+        .avatar { width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--main); margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 30px; background: #333; background-size: cover; background-position: center; }
+        .balance { font-size: 28px; font-weight: bold; margin: 10px 0; }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
+        .card-box { background: var(--card); padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #333; cursor: pointer; }
+        .btn { width: 100%; padding: 10px; background: var(--main); border: none; border-radius: 8px; font-weight: bold; margin-top: 5px; cursor: pointer; color: black; }
+        .btn-red { background: #ff4444; color: white; }
+        
+        .tab-bar { position: fixed; bottom: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #333; z-index: 100; }
+        .tab-btn { background: none; border: none; font-size: 24px; cursor: pointer; opacity: 0.5; }
+        .tab-btn.active { opacity: 1; transform: scale(1.2); }
 
-        :root { --primary: #00ff88; --secondary: #00aaff; --bg: #0f0f13; --card-bg: #1a1a2e; --text: #ffffff; }
-        body { margin: 0; background-color: var(--bg); color: var(--text); font-family: 'Roboto', sans-serif; -webkit-tap-highlight-color: transparent; padding-bottom: 80px; }
-
-        /* HEADER */
-        .header { background: linear-gradient(180deg, rgba(0,255,136,0.1) 0%, transparent 100%); padding: 20px; text-align: center; border-bottom: 1px solid #333; }
-        .user-avatar { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--primary); margin: 0 auto 10px; background: #333; display: flex; align-items: center; justify-content: center; font-size: 30px; }
-        .user-name { font-family: 'Orbitron', sans-serif; font-size: 20px; color: var(--primary); }
-        .user-firm { font-size: 12px; color: #888; margin-top: 5px; }
-
-        /* STATS */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
-        .stat-card { background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid #333; text-align: center; }
-        .stat-value { font-size: 18px; font-weight: bold; margin-top: 5px; }
-        .stat-label { font-size: 12px; color: #aaa; }
-        .coin { color: #ffd700; } .mtc { color: var(--secondary); }
-
-        /* TABS */
-        .tab-bar { position: fixed; bottom: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #333; z-index: 100; }
-        .tab-btn { background: none; border: none; color: #555; font-size: 24px; cursor: pointer; }
-        .tab-btn.active { color: var(--primary); transform: scale(1.2); transition: 0.2s; }
-
-        /* PAGES */
-        .page { display: none; padding: 15px; animation: fadeIn 0.3s; }
+        .page { display: none; padding: 15px; }
         .page.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .section-title { font-family: 'Orbitron', sans-serif; margin-bottom: 15px; border-left: 3px solid var(--primary); padding-left: 10px;}
 
-        /* ITEMS */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .item-card { background: var(--card-bg); padding: 10px; border-radius: 10px; text-align: center; border: 1px solid #333; }
-        .btn { width: 100%; padding: 10px; background: var(--primary); border: none; border-radius: 8px; font-weight: bold; margin-top: 5px; cursor: pointer; color: black; }
-        .btn:active { transform: scale(0.95); }
+        /* CHAT STYLES */
+        #chat-list { height: 60vh; overflow-y: scroll; margin-bottom: 60px; padding: 10px; }
+        .msg { margin-bottom: 10px; padding: 8px 12px; background: #222; border-radius: 8px; font-size: 14px; }
+        .msg.system { background: rgba(255, 215, 0, 0.1); border-left: 3px solid gold; color: #ffd700; }
+        .msg-name { font-weight: bold; color: var(--main); font-size: 12px; margin-bottom: 2px; }
+        .chat-input-area { position: fixed; bottom: 70px; width: 100%; background: #111; padding: 10px; display: flex; box-sizing: border-box; }
+        #chat-input { flex-grow: 1; padding: 10px; border-radius: 20px; border: none; outline: none; }
 
-        /* LOADER */
-        #loader { position: fixed; top:0; left:0; width:100%; height:100%; background: #000; display: flex; justify-content: center; align-items: center; z-index: 999; color: var(--primary); font-family: 'Orbitron', sans-serif; flex-direction: column; text-align: center; padding: 20px;}
+        /* INVENTORY */
+        .inv-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+        .inv-card { background: #222; border-radius: 5px; overflow: hidden; cursor: pointer; position: relative; }
+        .inv-card img { width: 100%; height: 100px; object-fit: cover; }
+        .inv-count { position: absolute; bottom: 0; right: 0; background: rgba(0,0,0,0.7); padding: 2px 5px; font-size: 10px; }
+        
+        /* MODAL */
+        #modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 999; display: none; justify-content: center; align-items: center; flex-direction: column; }
+        #modal img { width: 200px; border-radius: 10px; border: 2px solid var(--main); }
+        .modal-close { position: absolute; top: 20px; right: 20px; font-size: 30px; cursor: pointer; }
+        
+        /* MISC */
+        input { width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; margin-bottom: 10px; box-sizing: border-box; }
+        .list-item { background: var(--card); padding: 10px; margin-bottom: 5px; border-radius: 5px; display: flex; justify-content: space-between; }
     </style>
 </head>
 <body>
 
-    <div id="loader">
-        <h2>CONNECTING...</h2>
-        <p id="debug-text" style="font-size: 12px; color: #666; margin-top: 20px;">Waiting for Telegram...</p>
-    </div>
+    <div id="loader" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:1000; display:flex; justify-content:center; align-items:center;">Loading...</div>
 
     <!-- HEADER -->
     <div class="header">
-        <div class="user-avatar" id="avatar">👤</div>
-        <div class="user-name" id="username">User</div>
-        <div class="user-firm" id="firm">Загрузка...</div>
+        <div class="avatar" id="u-ava"></div>
+        <div id="u-name" style="margin-top:5px; font-weight:bold;">User</div>
+        <div class="balance"><span id="u-bal">0</span> 🪙</div>
+        <div style="color:#00aaff; font-weight:bold;"><span id="u-crypto">0</span> MTC</div>
     </div>
 
-    <!-- STATS -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-label">Баланс</div>
-            <div class="stat-value coin"><span id="bal">0</span> 🪙</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Крипто</div>
-            <div class="stat-value mtc"><span id="crypto">0</span> MTC</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Вайпы</div>
-            <div class="stat-value"><span id="wipes">0</span> ☢️</div>
-        </div>
-    </div>
-
-    <!-- PAGES -->
+    <!-- HOME -->
     <div id="home" class="page active">
-        <h2 class="section-title">Действия</h2>
-        <button class="btn" onclick="api('farm')" style="height: 60px; font-size: 18px; margin-bottom: 20px;">⛏️ ЕЖЕДНЕВНЫЙ ФАРМ</button>
-        <h2 class="section-title">Игры</h2>
+        <h3>Действия</h3>
+        <button class="btn" onclick="api('farm')">⛏️ ФАРМ (+100)</button>
+        <button class="btn" onclick="location.href='game.html'" style="margin-top:10px; background:#aa00ff; color:white;">⚔️ ИГРАТЬ</button>
+        
+        <h3>Профиль</h3>
         <div class="grid">
-            <div class="item-card" onclick="location.href='game.html'">
-                <div style="font-size: 40px;">⚔️</div>
-                <h3>Gorem Battles</h3>
-            </div>
-            <div class="item-card" onclick="alert('Доступно через чат: /roulette')">
-                <div style="font-size: 40px;">🎲</div>
-                <h3>Рулетка</h3>
-            </div>
+            <div class="card-box"><div>Вайпы</div><h2 id="u-wipes">0</h2></div>
+            <div class="card-box"><div>Карты</div><h2 id="u-cards">0</h2></div>
+        </div>
+
+        <h3>Промокод</h3>
+        <div style="display:flex; gap:5px;">
+            <input type="text" id="promo-code" placeholder="CODE">
+            <button class="btn" style="width:auto; margin:0;" onclick="usePromo()">OK</button>
         </div>
     </div>
 
+    <!-- CHAT -->
+    <div id="chat" class="page" style="padding:0;">
+        <div id="chat-list"></div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Сообщение...">
+            <button class="btn" style="width:auto; margin:0 0 0 5px;" onclick="sendChat()">➤</button>
+        </div>
+    </div>
+
+    <!-- SHOP -->
     <div id="shop" class="page">
-        <h2 class="section-title">Кейсы</h2>
+        <h3>Магазин</h3>
         <div class="grid">
-            <div class="item-card"><div>📦</div><div>Common</div><div style="color:#aaa">50 🪙</div><button class="btn" onclick="buyCase('common')">Купить</button></div>
-            <div class="item-card"><div>🟦</div><div>Rare</div><div style="color:#aaa">150 🪙</div><button class="btn" onclick="buyCase('rare')">Купить</button></div>
-            <div class="item-card"><div>🟪</div><div>Premium</div><div style="color:#aaa">300 🪙</div><button class="btn" onclick="buyCase('premium')">Купить</button></div>
-            <div class="item-card"><div>🟧</div><div>Mythic</div><div style="color:#aaa">1000 🪙</div><button class="btn" onclick="buyCase('mythic')">Купить</button></div>
-            <div class="item-card"><div>💼</div><div>Business</div><div style="color:#aaa">15000 🪙</div><button class="btn" onclick="buyCase('business')">Купить</button></div>
+            <div class="card-box" onclick="buy('common', 50)">📦 Common<br><small>50 🪙</small></div>
+            <div class="card-box" onclick="buy('rare', 150)">🟦 Rare<br><small>150 🪙</small></div>
+            <div class="card-box" onclick="buy('premium', 300)">🟪 Premium<br><small>300 🪙</small></div>
+            <div class="card-box" onclick="buy('mythic', 1000)">🟧 Mythic<br><small>1000 🪙</small></div>
+            <div class="card-box" onclick="buy('secret', 5000)">⬛ Secret<br><small>5000 🪙</small></div>
+            <div class="card-box" onclick="buy('business', 15000)">💼 Business<br><small>15000 🪙</small></div>
+            <div class="card-box" onclick="buy('platinum', 500000)" style="border-color:gold; color:gold;">👑 Platinum<br><small>500k 🪙</small></div>
         </div>
     </div>
 
-    <div id="crypto-page" class="page">
-        <h2 class="section-title">MTC Exchange</h2>
-        <div class="item-card" style="margin-bottom: 20px;">
-            <h1 style="margin: 5px 0;">💎 <span id="mtc-price">...</span></h1>
-            <div style="color: #aaa;">Текущий курс</div>
-        </div>
-        <input type="number" id="trade-amount" placeholder="Количество" style="width:100%; padding:15px; background: #222; border: 1px solid #444; color: white; border-radius: 8px; margin-bottom: 10px; box-sizing:border-box;">
+    <!-- CRYPTO -->
+    <div id="crypto" class="page">
+        <h3>Биржа MTC</h3>
+        <h1 style="text-align:center; color:#00aaff;">💎 <span id="mtc-price">0</span></h1>
+        <canvas id="chart" style="width:100%; height:200px; margin: 10px 0;"></canvas>
+        <input type="number" id="trade-amount" placeholder="Количество">
         <div class="grid">
             <button class="btn" onclick="trade('buy')">КУПИТЬ</button>
-            <button class="btn" onclick="trade('sell')" style="background:#ff4444; color:white">ПРОДАТЬ</button>
+            <button class="btn btn-red" onclick="trade('sell')">ПРОДАТЬ</button>
         </div>
     </div>
 
-    <div id="inventory" class="page">
-        <h2 class="section-title">Инвентарь</h2>
-        <div id="inv-list"></div>
+    <!-- FIRM -->
+    <div id="firm" class="page">
+        <div id="firm-exists" style="display:none;">
+            <h2 id="firm-name" style="text-align:center;"></h2>
+            <div class="card-box">Казна: <span id="firm-bal">0</span> 🪙</div>
+            <input type="number" id="donate-amount" placeholder="Сумма" style="margin-top:10px;">
+            <button class="btn" onclick="firmAction('donate')">Внести в казну</button>
+        </div>
+        <div id="firm-none">
+            <h3>Создать фирму</h3>
+            <input type="text" id="new-firm-name" placeholder="Название">
+            <button class="btn" onclick="firmAction('create')">Создать (100k 🪙)</button>
+            <h3>Список фирм</h3>
+            <div id="firm-list">Loading...</div>
+            <input type="number" id="join-id" placeholder="ID Фирмы" style="margin-top:20px;">
+            <button class="btn" onclick="firmAction('join')">Вступить</button>
+        </div>
     </div>
 
-    <!-- TABS -->
+    <!-- TOP -->
+    <div id="top" class="page">
+        <h3>Топ Богачей</h3>
+        <div id="top-list"></div>
+    </div>
+
+    <!-- INVENTORY -->
+    <div id="inv" class="page">
+        <div class="inv-grid" id="inv-grid"></div>
+    </div>
+
+    <!-- NAVIGATION -->
     <div class="tab-bar">
         <button class="tab-btn active" onclick="nav('home', this)">🏠</button>
+        <button class="tab-btn" onclick="nav('chat', this)">💬</button>
         <button class="tab-btn" onclick="nav('shop', this)">🛒</button>
-        <button class="tab-btn" onclick="nav('crypto-page', this)">📈</button>
-        <button class="tab-btn" onclick="nav('inventory', this)">🎒</button>
+        <button class="tab-btn" onclick="nav('crypto', this)">📈</button>
+        <button class="tab-btn" onclick="nav('firm', this)">🏢</button>
+        <button class="tab-btn" onclick="nav('top', this)">🏆</button>
+        <button class="tab-btn" onclick="nav('inv', this)">🎒</button>
+    </div>
+
+    <!-- MODAL -->
+    <div id="modal">
+        <div class="modal-close" onclick="closeModal()">✖</div>
+        <img id="m-img" src="">
+        <h2 id="m-name"></h2>
+        <p id="m-desc" style="color:#aaa;"></p>
+        <div id="m-rarity" style="padding:5px; background:#333; border-radius:5px;"></div>
     </div>
 
     <script>
-        // === НАСТРОЙКИ ===
-        // !!! ЗАМЕНИ ЭТУ ССЫЛКУ НА СВОЙ URL RENDER !!!
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        
+        // !!! URL ВАШЕГО БОТА НА RENDER !!!
         const API_URL = "https://my-super-bot-1gwh.onrender.com"; 
 
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+        let user = tg.initDataUnsafe?.user || { id: 7328565195, first_name: "Test", username: "test" };
+        let appData = {};
+        let chartInstance = null;
+        let chatInterval = null;
 
-        // === ОТЛАДКА И ИНИЦИАЛИЗАЦИЯ ПОЛЬЗОВАТЕЛЯ ===
-        let user = null;
-
-        try {
-            // Пробуем получить данные безопасным способом
-            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                user = tg.initDataUnsafe.user;
-                document.getElementById('debug-text').innerText = "Telegram User Found: " + user.first_name;
-            } else {
-                // Если данных нет, создаем ФЕЙКОВОГО пользователя (чтобы не было краша)
-                // Но выводим предупреждение
-                document.getElementById('debug-text').innerText = "⚠️ User not found. Using Debug User.";
-                // alert("Ошибка: Telegram не передал данные пользователя! Возможно, приложение открыто по прямой ссылке. Используется тестовый режим.");
-                user = {
-                    id: 7328565195, // Твой ID
-                    first_name: "DebugUser",
-                    username: "debug_user"
-                };
-            }
-        } catch (e) {
-            document.getElementById('debug-text').innerText = "Critical Error: " + e.message;
-            alert("Критическая ошибка инициализации: " + e.message);
-        }
-
-        let userData = {};
-
-        // === ОСНОВНАЯ ЛОГИКА ===
         async function init() {
-            if (!user) return; // На всякий случай
-
             try {
+                // Fix Avatar
+                const avaDiv = document.getElementById('u-ava');
+                if (user.photo_url) {
+                    avaDiv.style.backgroundImage = `url('${user.photo_url}')`;
+                    avaDiv.innerText = "";
+                } else {
+                    avaDiv.innerText = user.first_name[0];
+                }
+
                 const res = await fetch(`${API_URL}/api/get_user`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_id: user.id, first_name: user.first_name })
                 });
-
-                if (!res.ok) throw new Error(`Server Error: ${res.status}`);
-                
-                const data = await res.json();
-                if (data.error) throw new Error(data.error);
-
-                userData = data;
-                renderData();
-                document.getElementById('loader').style.display = 'none'; // Скрываем загрузку только при успехе
-            } catch(e) {
-                document.getElementById('debug-text').innerText = "Connection Failed: " + e.message;
-                alert("Не удалось подключиться к серверу бота. Проверьте интернет или API_URL.\n" + e);
-            }
+                appData = await res.json();
+                render();
+                document.getElementById('loader').style.display = 'none';
+            } catch(e) { alert("Ошибка: " + e); }
         }
 
-        function renderData() {
-            try {
-                document.getElementById('username').innerText = userData.user.first_name;
-                document.getElementById('avatar').innerText = userData.user.first_name ? userData.user.first_name[0] : "U";
-                document.getElementById('bal').innerText = userData.user.balance;
-                document.getElementById('crypto').innerText = userData.user.crypto_balance;
-                document.getElementById('wipes').innerText = userData.user.wipe_count || 0;
-                document.getElementById('mtc-price').innerText = userData.crypto_price;
-                
-                const f = userData.firm;
-                document.getElementById('firm').innerText = f ? f.name : "Безработный";
+        function render() {
+            document.getElementById('u-name').innerText = appData.user.first_name;
+            document.getElementById('u-bal').innerText = appData.user.balance;
+            document.getElementById('u-crypto').innerText = appData.user.crypto_balance;
+            document.getElementById('u-wipes').innerText = appData.user.wipe_count || 0;
+            
+            let totalCards = 0;
+            const invDiv = document.getElementById('inv-grid');
+            invDiv.innerHTML = "";
+            appData.inventory.forEach(c => {
+                totalCards += c.count;
+                invDiv.innerHTML += `
+                    <div class="inv-card" onclick='showCard(${JSON.stringify(c)})'>
+                        <img src="${c.image_url}">
+                        <div class="inv-count">x${c.count}</div>
+                    </div>
+                `;
+            });
+            document.getElementById('u-cards').innerText = totalCards;
 
-                // Инвентарь
-                const invList = document.getElementById('inv-list');
-                invList.innerHTML = "";
-                if (!userData.inventory || userData.inventory.length === 0) {
-                    invList.innerHTML = "<div style='text-align:center; color:#555; margin-top:20px;'>Пусто...</div>";
-                } else {
-                    userData.inventory.forEach(item => {
-                        invList.innerHTML += `
-                            <div class="inv-item" style="display:flex; align-items:center; background:#1e1e24; margin-bottom:5px; padding:10px; border-radius:8px;">
-                                <div class="inv-img" style="width:40px; height:40px; background-image:url('${item.image_url}'); background-size:cover; border-radius:4px; margin-right:10px;"></div>
-                                <div style="flex-grow:1;">
-                                    <div style="font-weight:bold; font-size:14px;">${item.name}</div>
-                                    <div style="font-size:12px; color:#aaa">${item.rarity}</div>
-                                </div>
-                                <div style="font-weight:bold; color:var(--primary)">x${item.count}</div>
-                            </div>
-                        `;
-                    });
-                }
-            } catch (e) {
-                console.error("Render error:", e);
+            document.getElementById('mtc-price').innerText = appData.crypto.price;
+            drawChart(appData.crypto.history);
+
+            if (appData.firm) {
+                document.getElementById('firm-exists').style.display = 'block';
+                document.getElementById('firm-none').style.display = 'none';
+                document.getElementById('firm-name').innerText = appData.firm.name;
+                document.getElementById('firm-bal').innerText = appData.firm.balance;
+            } else {
+                document.getElementById('firm-exists').style.display = 'none';
+                document.getElementById('firm-none').style.display = 'block';
+                loadFirmsList();
             }
         }
 
         async function api(endpoint, payload={}) {
             tg.MainButton.showProgress();
             payload.user_id = user.id;
-            
             try {
-                const res = await fetch(`${API_URL}/api/${endpoint}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const result = await res.json();
-                
+                const res = await fetch(`${API_URL}/api/${endpoint}`, { method: 'POST', body: JSON.stringify(payload) });
+                const data = await res.json();
                 tg.MainButton.hideProgress();
-                
-                if (result.success) {
-                    tg.showAlert(result.message);
-                    if(result.balance !== undefined) userData.user.balance = result.balance;
-                    if(result.crypto !== undefined) userData.user.crypto_balance = result.crypto;
-                    if(result.card) { init(); return; } // Перезагрузка при получении карты
-                    renderData();
+                if (data.success) {
+                    if (data.msg) tg.showAlert(data.msg);
+                    if (data.card) showCard(data.card);
+                    init();
                 } else {
-                    tg.showAlert("Ошибка: " + result.message);
+                    tg.showAlert(data.msg || "Ошибка");
                 }
-            } catch(e) {
-                tg.MainButton.hideProgress();
-                tg.showAlert("Ошибка сети: " + e);
-            }
+            } catch(e) { tg.MainButton.hideProgress(); alert(e); }
         }
 
-        function buyCase(type) {
-            tg.showConfirm(`Купить ${type} кейс?`, (ok) => {
-                if(ok) api('buy_case', { type: type });
+        // --- CHAT LOGIC ---
+        async function loadChat() {
+            try {
+                const res = await fetch(`${API_URL}/api/chat_get`, { method: 'POST', body: JSON.stringify({ user_id: user.id }) });
+                const data = await res.json();
+                const list = document.getElementById('chat-list');
+                list.innerHTML = "";
+                data.messages.forEach(m => {
+                    const cls = m.is_system ? 'msg system' : 'msg';
+                    list.innerHTML += `
+                        <div class="${cls}">
+                            <div class="msg-name">${m.username}</div>
+                            <div>${m.message}</div>
+                        </div>
+                    `;
+                });
+                list.scrollTop = list.scrollHeight;
+            } catch(e) {}
+        }
+
+        async function sendChat() {
+            const inp = document.getElementById('chat-input');
+            const msg = inp.value;
+            if(!msg) return;
+            inp.value = "";
+            await fetch(`${API_URL}/api/chat_send`, { 
+                method: 'POST', 
+                body: JSON.stringify({ user_id: user.id, name: user.first_name, message: msg }) 
             });
+            loadChat();
         }
 
-        function trade(op) {
-            const amount = document.getElementById('trade-amount').value;
-            if(!amount) return;
-            api('crypto', { op: op, amount: amount });
+        // --- ACTIONS ---
+        function buy(type, price) { tg.showConfirm(`Купить кейс ${type}?`, (ok) => { if(ok) api('buy_case', { type: type }); }); }
+        function trade(op) { const val = document.getElementById('trade-amount').value; if(val) api('crypto_trade', { op: op, amount: val }); }
+        function usePromo() { const code = document.getElementById('promo-code').value; if(code) api('promo', { code: code }); }
+        function firmAction(act) {
+            const payload = { act: act };
+            if (act === 'create') payload.name = document.getElementById('new-firm-name').value;
+            if (act === 'join') payload.fid = document.getElementById('join-id').value;
+            if (act === 'donate') payload.amount = document.getElementById('donate-amount').value;
+            api('firm', payload);
         }
-
-        function nav(pageId, btn) {
+        
+        function nav(id, btn) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            
-            document.getElementById(pageId).classList.add('active');
+            document.getElementById(id).classList.add('active');
             btn.classList.add('active');
+            
+            if(id === 'chat') { loadChat(); chatInterval = setInterval(loadChat, 3000); }
+            else { if(chatInterval) clearInterval(chatInterval); }
+            
+            if(id === 'top') loadTop();
         }
 
-        // ЗАПУСК
-        init();
-    </script>
-</body>
-</html>
+        function showCard(c) {
+            document.getElementById('modal').style.display = 'flex';
+            document.getElementById('m-img').src = c.image_url;
+            document.getElementById('m-name').innerText = c.name;
+            document.getElementById('m-desc').innerText = c.description || "";
+            document.getElementById('m-rarity').innerText = c.rarity.toUpperCase();
+        }
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+
+        async function loadTop() {
+            const res = await fetch(`${API_URL}/api/top`, { method: 'POST', body: JSON.stringify({user_id: user.id}) });
+            const data = await res.json();
+            const list = document.getElementById('top-list');
+            list.innerHTML = "";
+            data.top.forEach((u, i) => {
+                list.innerHTML += `<div class="list-item"><div>${i+1}. ${u.first_name}</div><div style="color:gold">${u.balance}</div></div>`;
+            });
+        }
+        async function loadFirmsList() { document.getElementById('firm-list').innerText = "Введите ID фирмы (Список в боте: /firmlist)"; }
+        
+        function drawChart(data) {
+            const ctx = document.getElementById('chart').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map((_, i) => i),
+                    datasets: [{ label: 'MTC', data: data, borderColor: '#00aaff', borderWidth: 2, pointRadius: 0, fill: true, backgroundColor: 'rgba(0, 170, 255, 0.1)' }]
+                },
+                options: { responsive: true, p
