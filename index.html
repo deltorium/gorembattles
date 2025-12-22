@@ -336,4 +336,11 @@
                     labels: data.map((_, i) => i),
                     datasets: [{ label: 'MTC', data: data, borderColor: '#00aaff', borderWidth: 2, pointRadius: 0, fill: true, backgroundColor: 'rgba(0, 170, 255, 0.1)' }]
                 },
-                options: { responsive: true, p
+                options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { ticks: { color: '#666' }, grid: { color: '#333' } } } }
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>
