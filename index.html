@@ -8,10 +8,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --main: #00ff88; --bg: #0f0f13; --card: #1e1e24; --text: #fff; --danger: #ff4444; }
-        body { margin: 0; background: var(--bg); color: var(--text); font-family: sans-serif; padding-bottom: 70px; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: sans-serif; padding-bottom: 80px; }
         
         .header { padding: 15px; background: linear-gradient(180deg, rgba(0,255,136,0.1), transparent); text-align: center; border-bottom: 1px solid #333; }
-        .avatar { width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--main); margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 24px; background: #333; }
+        .avatar { width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--main); margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 24px; background: #333; background-size: cover; background-position: center; }
         .balance { font-size: 24px; font-weight: bold; margin: 5px 0; }
         
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; }
@@ -31,7 +31,6 @@
         /* DECODE STYLE */
         #decode .card-box { border-color: var(--main); font-family: monospace; }
         .glitch { animation: glitch 1s infinite; }
-        @keyframes glitch { 0% { transform: translate(0) } 20% { transform: translate(-2px, 2px) } 40% { transform: translate(-2px, -2px) } 60% { transform: translate(2px, 2px) } 80% { transform: translate(2px, -2px) } 100% { transform: translate(0) } }
 
         /* ADMIN PANEL */
         .admin-panel { border: 1px solid var(--danger); padding: 10px; border-radius: 10px; background: rgba(255,0,0,0.1); }
@@ -40,16 +39,22 @@
         /* CHAT & INV */
         #chat-list { height: 60vh; overflow-y: auto; margin-bottom: 50px; padding: 5px; display: flex; flex-direction: column-reverse; }
         .msg { margin-bottom: 8px; padding: 8px; background: #222; border-radius: 8px; font-size: 13px; }
+        .msg.system { background: rgba(255, 215, 0, 0.1); border-left: 3px solid gold; color: #ffd700; }
         .msg-name { font-weight: bold; color: var(--main); font-size: 11px; }
+        .chat-input-area { position: fixed; bottom: 70px; width: 100%; background: #111; padding: 10px; display: flex; box-sizing: border-box; }
+        #chat-input { flex-grow: 1; padding: 10px; border-radius: 20px; border: none; outline: none; }
         
         .inv-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
         .inv-card { background: #222; border-radius: 5px; cursor: pointer; position: relative; aspect-ratio: 2/3; overflow: hidden; }
         .inv-card img { width: 100%; height: 100%; object-fit: cover; }
+        .inv-count { position: absolute; bottom: 0; right: 0; background: rgba(0,0,0,0.7); padding: 2px 5px; font-size: 10px; }
         
         input { width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; margin-bottom: 10px; box-sizing: border-box; }
-        
+        .list-item { background: var(--card); padding: 10px; margin-bottom: 5px; border-radius: 5px; display: flex; justify-content: space-between; }
+
+        /* MODAL */
         #modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 999; display: none; justify-content: center; align-items: center; flex-direction: column; }
-        #modal img { width: 200px; border: 2px solid var(--main); border-radius: 10px; }
+        #modal img { width: 200px; border: 2px solid var(--main); border-radius: 10px; margin-bottom: 15px;}
         .close-modal { position: absolute; top: 20px; right: 20px; font-size: 30px; cursor: pointer; }
     </style>
 </head>
@@ -61,7 +66,8 @@
         <div class="avatar" id="u-ava"></div>
         <div id="u-name" style="margin-top:5px; font-weight:bold;">User</div>
         <div class="balance"><span id="u-bal">0</span> 🪙</div>
-        <div style="font-size:12px; color:#aaa;">ID: <span id="u-id"></span></div>
+        <div style="font-size:12px; color:#aaa;">ID: <span id="u-id">...</span></div>
+        <div style="color:#00aaff; font-weight:bold; margin-top:5px;"><span id="u-crypto">0</span> MTC</div>
     </div>
 
     <!-- HOME -->
@@ -102,7 +108,7 @@
             <h1 id="event-title">Тишина...</h1>
             <p id="event-desc">Активных ивентов нет.</p>
             <div id="boss-hp" style="display:none; color:red; font-weight:bold; font-size:24px;"></div>
-            <button id="event-btn" class="btn hidden" onclick="eventAction()">ДЕЙСТВИЕ</button>
+            <button id="event-btn" class="btn hidden" style="display:none;" onclick="eventAction()">ДЕЙСТВИЕ</button>
         </div>
     </div>
 
@@ -138,16 +144,68 @@
         </div>
     </div>
 
-    <!-- SHOP, CRYPTO, FIRM, TOP, INV (Standard) -->
-    <!-- (Оставил их сокращенными, код идентичен v7.0, просто добавь их блоки сюда) -->
-    <!-- ... SHOP, CRYPTO, FIRM, TOP, INV BLOCKS HERE ... -->
-    <div id="shop" class="page"><h3>Магазин</h3><div class="grid"><div class="card-box" onclick="buy('common', 50)">📦 Common<br>50</div><div class="card-box" onclick="buy('rare', 150)">🟦 Rare<br>150</div><div class="card-box" onclick="buy('premium', 300)">🟪 Premium<br>300</div><div class="card-box" onclick="buy('mythic', 1000)">🟧 Mythic<br>1000</div><div class="card-box" onclick="buy('secret', 5000)">⬛ Secret<br>5000</div><div class="card-box" onclick="buy('platinum', 500000)">👑 Platinum<br>500k</div></div></div>
-    <div id="crypto" class="page"><h3>Биржа</h3><h1 style="text-align:center">💎 <span id="mtc-price">0</span></h1><canvas id="chart"></canvas><input type="number" id="trade-amount" placeholder="Сумма"><div class="grid"><button class="btn" onclick="trade('buy')">BUY</button><button class="btn btn-red" onclick="trade('sell')">SELL</button></div></div>
-    <div id="firm" class="page"><div id="firm-none"><input id="new-firm-name" placeholder="Name"><button class="btn" onclick="firmAction('create')">Create (100k)</button><input id="join-id" placeholder="ID"><button class="btn" onclick="firmAction('join')">Join</button></div><div id="firm-exists" style="display:none"><h2 id="firm-name"></h2><button class="btn" onclick="firmAction('donate')">Donate</button></div></div>
-    <div id="top" class="page"><h3>TOP 10</h3><div id="top-list"></div></div>
-    <div id="inv" class="page"><div class="inv-grid" id="inv-grid"></div></div>
+    <!-- SHOP -->
+    <div id="shop" class="page">
+        <h3>Магазин</h3>
+        <div class="grid">
+            <div class="card-box" onclick="buy('common', 50)">📦 Common<br><small>50 🪙</small></div>
+            <div class="card-box" onclick="buy('rare', 150)">🟦 Rare<br><small>150 🪙</small></div>
+            <div class="card-box" onclick="buy('premium', 300)">🟪 Premium<br><small>300 🪙</small></div>
+            <div class="card-box" onclick="buy('mythic', 1000)">🟧 Mythic<br><small>1000 🪙</small></div>
+            <div class="card-box" onclick="buy('secret', 5000)">⬛ Secret<br><small>5000 🪙</small></div>
+            <div class="card-box" onclick="buy('business', 15000)">💼 Business<br><small>15000 🪙</small></div>
+            <div class="card-box" onclick="buy('platinum', 500000)" style="border-color:gold; color:gold;">👑 Platinum<br><small>500k 🪙</small></div>
+        </div>
+    </div>
 
-    <!-- TAB BAR -->
+    <!-- LAB -->
+    <div id="lab" class="page">
+        <h3>Крафт</h3>
+        <div id="recipes-list"></div>
+    </div>
+
+    <!-- CRYPTO -->
+    <div id="crypto" class="page">
+        <h1 style="text-align:center; color:#00aaff;">💎 <span id="mtc-price">0</span></h1>
+        <canvas id="chart" style="width:100%; height:200px; margin: 10px 0;"></canvas>
+        <input type="number" id="trade-amount" placeholder="Количество">
+        <div class="grid">
+            <button class="btn" onclick="trade('buy')">КУПИТЬ</button>
+            <button class="btn btn-red" onclick="trade('sell')">ПРОДАТЬ</button>
+        </div>
+    </div>
+
+    <!-- FIRM -->
+    <div id="firm" class="page">
+        <div id="firm-exists" style="display:none;">
+            <h2 id="firm-name" style="text-align:center;"></h2>
+            <div class="card-box">Казна: <span id="firm-bal">0</span> 🪙</div>
+            <input type="number" id="donate-amount" placeholder="Сумма" style="margin-top:10px;">
+            <button class="btn" onclick="firmAction('donate')">Внести в казну</button>
+        </div>
+        <div id="firm-none">
+            <h3>Создать фирму</h3>
+            <input type="text" id="new-firm-name" placeholder="Название">
+            <button class="btn" onclick="firmAction('create')">Создать (100k 🪙)</button>
+            <h3>Список фирм</h3>
+            <div id="firm-list">Loading...</div>
+            <input type="number" id="join-id" placeholder="ID Фирмы" style="margin-top:20px;">
+            <button class="btn" onclick="firmAction('join')">Вступить</button>
+        </div>
+    </div>
+
+    <!-- TOP -->
+    <div id="top" class="page">
+        <h3>Топ Богачей</h3>
+        <div id="top-list"></div>
+    </div>
+
+    <!-- INVENTORY -->
+    <div id="inv" class="page">
+        <div class="inv-grid" id="inv-grid"></div>
+    </div>
+
+    <!-- NAVIGATION -->
     <div class="tab-bar">
         <button class="tab-btn active" onclick="nav('home', this)">🏠</button>
         <button class="tab-btn" onclick="nav('chat', this)">💬</button>
@@ -160,84 +218,121 @@
         <button class="tab-btn" onclick="nav('inv', this)">🎒</button>
     </div>
 
-    <div id="modal"><div class="close-modal" onclick="document.getElementById('modal').style.display='none'">✖</div><img id="m-img"><h2 id="m-name"></h2><p id="m-desc"></p><div id="m-rarity"></div></div>
+    <!-- MODAL -->
+    <div id="modal">
+        <div class="close-modal" onclick="document.getElementById('modal').style.display='none'">✖</div>
+        <img id="m-img" src="">
+        <h2 id="m-name"></h2>
+        <p id="m-desc" style="color:#aaa;"></p>
+        <div id="m-rarity" style="padding:5px; background:#333; border-radius:5px;"></div>
+    </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
         
-        // !!! ЗАМЕНИ НА СВОЙ !!!
+        // !!! URL ВАШЕГО БОТА НА RENDER !!!
         const API_URL = "https://my-super-bot-1gwh.onrender.com"; 
 
         let user = tg.initDataUnsafe?.user || { id: 7328565195, first_name: "Test", username: "test" };
         let appData = {};
         let chartInstance = null;
 
+        // БЕЗОПАСНАЯ ФУНКЦИЯ УСТАНОВКИ ТЕКСТА
+        // Если элемента нет в HTML, она просто ничего не делает (не крашит сайт)
+        function safeSet(id, text) {
+            const el = document.getElementById(id);
+            if (el) el.innerText = text;
+        }
+
         async function init() {
             try {
-                document.getElementById('u-ava').innerText = user.first_name[0];
+                // Пытаемся установить аватарку, если элемента нет - игнор
+                const avaDiv = document.getElementById('u-ava');
+                if(avaDiv) avaDiv.innerText = user.first_name[0];
+                
                 const res = await fetch(`${API_URL}/api/get_user`, {
                     method: 'POST',
                     body: JSON.stringify({ user_id: user.id, first_name: user.first_name })
                 });
                 appData = await res.json();
+                
+                if (appData.error) throw new Error(appData.error);
+                
                 render();
-                document.getElementById('loader').style.display = 'none';
+                
+                const loader = document.getElementById('loader');
+                if(loader) loader.style.display = 'none';
                 
                 // Show Admin Tab
-                if (appData.is_admin) document.getElementById('btn-admin').style.display = 'block';
+                if (appData.is_admin) {
+                    const btnAdmin = document.getElementById('btn-admin');
+                    if(btnAdmin) btnAdmin.style.display = 'block';
+                }
 
             } catch(e) { alert("Error: " + e); }
         }
 
         function render() {
-            document.getElementById('u-name').innerText = appData.user.first_name;
-            document.getElementById('u-id').innerText = appData.user.user_id;
-            document.getElementById('u-bal').innerText = appData.user.balance;
-            document.getElementById('u-crypto').innerText = appData.user.crypto_balance;
-            document.getElementById('u-wipes').innerText = appData.user.wipe_count || 0;
+            // Используем safeSet везде
+            safeSet('u-name', appData.user.first_name);
+            safeSet('u-id', appData.user.user_id);
+            safeSet('u-bal', appData.user.balance);
+            safeSet('u-crypto', appData.user.crypto_balance);
+            safeSet('u-wipes', appData.user.wipe_count || 0);
             
             // Inventory
             let totalCards = 0;
             const invDiv = document.getElementById('inv-grid');
-            invDiv.innerHTML = "";
-            appData.inventory.forEach(c => {
-                totalCards += c.count;
-                invDiv.innerHTML += `<div class="inv-card" onclick='showCard(${JSON.stringify(c)})'><img src="${c.image_url}"><div class="inv-count">x${c.count}</div></div>`;
-            });
-            document.getElementById('u-cards').innerText = totalCards;
+            if (invDiv) {
+                invDiv.innerHTML = "";
+                if (appData.inventory) {
+                    appData.inventory.forEach(c => {
+                        totalCards += c.count;
+                        invDiv.innerHTML += `<div class="inv-card" onclick='showCard(${JSON.stringify(c)})'><img src="${c.image_url}"><div class="inv-count">x${c.count}</div></div>`;
+                    });
+                }
+            }
+            safeSet('u-cards', totalCards);
 
-            // Crypto & Firm (Standard render)
-            document.getElementById('mtc-price').innerText = appData.crypto.price;
+            // Crypto
+            safeSet('mtc-price', appData.crypto.price);
             drawChart(appData.crypto.history);
             
+            // Firm
+            const firmExists = document.getElementById('firm-exists');
+            const firmNone = document.getElementById('firm-none');
+            
             if (appData.firm) {
-                document.getElementById('firm-exists').style.display = 'block';
-                document.getElementById('firm-none').style.display = 'none';
-                document.getElementById('firm-name').innerText = appData.firm.name;
-                document.getElementById('firm-bal').innerText = appData.firm.balance;
+                if(firmExists) firmExists.style.display = 'block';
+                if(firmNone) firmNone.style.display = 'none';
+                safeSet('firm-name', appData.firm.name);
+                safeSet('firm-bal', appData.firm.balance);
+            } else {
+                if(firmExists) firmExists.style.display = 'none';
+                if(firmNone) firmNone.style.display = 'block';
+                loadFirmsList();
             }
 
             // Events
             const ev = appData.event;
-            const evBox = document.getElementById('event-box');
             const evBtn = document.getElementById('event-btn');
             
-            if (ev.active) {
-                evBtn.classList.remove('hidden');
+            if (ev && ev.active) {
+                if(evBtn) evBtn.style.display = 'inline-block'; // показать кнопку
                 if (ev.type === 'boss') {
-                    document.getElementById('event-title').innerText = "⚔️ БОСС: АЛЕКСЕЙ";
-                    document.getElementById('event-desc').innerText = `HP: ${ev.boss_hp} / ${ev.boss_max}`;
-                    evBtn.innerText = "АТАКОВАТЬ";
+                    safeSet('event-title', "⚔️ БОСС: АЛЕКСЕЙ");
+                    safeSet('event-desc', `HP: ${ev.boss_hp} / ${ev.boss_max}`);
+                    if(evBtn) evBtn.innerText = "АТАКОВАТЬ";
                 } else {
-                    document.getElementById('event-title').innerText = "🎁 ПОДАРОК";
-                    document.getElementById('event-desc').innerText = "Кто-то оставил коробку...";
-                    evBtn.innerText = "ОТКРЫТЬ";
+                    safeSet('event-title', "🎁 ПОДАРОК");
+                    safeSet('event-desc', "Кто-то оставил коробку...");
+                    if(evBtn) evBtn.innerText = "ОТКРЫТЬ";
                 }
             } else {
-                document.getElementById('event-title').innerText = "Тишина...";
-                document.getElementById('event-desc').innerText = "Ивентов нет.";
-                evBtn.classList.add('hidden');
+                safeSet('event-title', "Тишина...");
+                safeSet('event-desc', "Ивентов нет.");
+                if(evBtn) evBtn.style.display = 'none';
             }
         }
 
@@ -258,7 +353,7 @@
 
         // --- NEW FUNCTIONS ---
         function doDecode(target) {
-            document.getElementById('decode-log').innerText = "Взлом...";
+            safeSet('decode-log', "Взлом...");
             setTimeout(() => { api('decode', { target: target }); }, 1000);
         }
 
@@ -277,27 +372,28 @@
             api('admin', payload);
         }
 
-        // --- STANDARD FUNCTIONS (Chat, Nav, etc) ---
-        // (Copy from v7.0 or use previous logic)
         async function loadChat() {
             const res = await fetch(`${API_URL}/api/chat_get`, { method: 'POST', body: JSON.stringify({ user_id: user.id }) });
             const data = await res.json();
             const list = document.getElementById('chat-list');
-            list.innerHTML = "";
-            data.messages.forEach(m => {
-                const cls = m.is_system ? 'msg system' : 'msg';
-                list.innerHTML += `<div class="${cls}"><span class="msg-name">${m.username}</span>: ${m.message}</div>`;
-            });
+            if(list) {
+                list.innerHTML = "";
+                data.messages.forEach(m => {
+                    const cls = m.is_system ? 'msg system' : 'msg';
+                    list.innerHTML += `<div class="${cls}"><span class="msg-name">${m.username}</span>: ${m.message}</div>`;
+                });
+            }
         }
         function sendChat() {
-            const msg = document.getElementById('chat-input').value;
+            const inp = document.getElementById('chat-input');
+            const msg = inp.value;
             if(msg) {
-                document.getElementById('chat-input').value = "";
+                inp.value = "";
                 fetch(`${API_URL}/api/chat_send`, { method: 'POST', body: JSON.stringify({ user_id: user.id, name: user.first_name, message: msg }) }).then(loadChat);
             }
         }
         
-        function buy(type, price) { tg.showConfirm(`Купить ${type}?`, (ok) => { if(ok) api('buy_case', { type: type }); }); }
+        function buy(type, price) { tg.showConfirm(`Купить кейс ${type}?`, (ok) => { if(ok) api('buy_case', { type: type }); }); }
         function trade(op) { const val = document.getElementById('trade-amount').value; if(val) api('crypto_trade', { op: op, amount: val }); }
         function usePromo() { const code = document.getElementById('promo-code').value; if(code) api('promo', { code: code }); }
         function firmAction(act) {
@@ -318,24 +414,33 @@
         }
         
         function showCard(c) {
-            document.getElementById('modal').style.display = 'flex';
+            const m = document.getElementById('modal');
+            if(!m) return;
+            m.style.display = 'flex';
             document.getElementById('m-img').src = c.image_url;
-            document.getElementById('m-name').innerText = c.name;
-            document.getElementById('m-desc').innerText = c.description || "";
-            document.getElementById('m-rarity').innerText = c.rarity.toUpperCase();
+            safeSet('m-name', c.name);
+            safeSet('m-desc', c.description || "");
+            safeSet('m-rarity', c.rarity.toUpperCase());
         }
 
         async function loadTop() {
             const res = await fetch(`${API_URL}/api/top`, { method: 'POST', body: JSON.stringify({user_id: user.id}) });
             const data = await res.json();
             const list = document.getElementById('top-list');
-            list.innerHTML = "";
-            data.top.forEach((u, i) => { list.innerHTML += `<div class="list-item"><div>${i+1}. ${u.first_name}</div><div style="color:gold">${u.balance}</div></div>`; });
+            if(list) {
+                list.innerHTML = "";
+                data.top.forEach((u, i) => { list.innerHTML += `<div class="list-item"><div>${i+1}. ${u.first_name}</div><div style="color:gold">${u.balance}</div></div>`; });
+            }
         }
-        async function loadFirmsList() { document.getElementById('firm-list').innerText = "Введите ID фирмы"; }
+        async function loadFirmsList() { 
+            const el = document.getElementById('firm-list');
+            if(el) el.innerText = "Введите ID фирмы"; 
+        }
         
         function drawChart(data) {
-            const ctx = document.getElementById('chart').getContext('2d');
+            const cvs = document.getElementById('chart');
+            if(!cvs) return;
+            const ctx = cvs.getContext('2d');
             if (chartInstance) chartInstance.destroy();
             chartInstance = new Chart(ctx, {
                 type: 'line',
