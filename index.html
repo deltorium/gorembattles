@@ -19,15 +19,15 @@
         .btn { width: 100%; padding: 10px; background: var(--main); border: none; border-radius: 8px; font-weight: bold; margin-top: 5px; cursor: pointer; color: black; }
         .btn-red { background: #ff4444; color: white; }
         
-        .tab-bar { position: fixed; bottom: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #333; z-index: 100; }
-        .tab-btn { background: none; border: none; font-size: 24px; cursor: pointer; opacity: 0.5; }
+        .tab-bar { position: fixed; bottom: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #333; z-index: 100; overflow-x: auto;}
+        .tab-btn { background: none; border: none; font-size: 20px; cursor: pointer; opacity: 0.5; padding: 5px; }
         .tab-btn.active { opacity: 1; transform: scale(1.2); }
 
         .page { display: none; padding: 15px; }
         .page.active { display: block; }
 
-        /* CHAT STYLES */
-        #chat-list { height: 60vh; overflow-y: scroll; margin-bottom: 60px; padding: 10px; }
+        /* CHAT */
+        #chat-list { height: 60vh; overflow-y: auto; margin-bottom: 60px; padding: 10px; display: flex; flex-direction: column-reverse;}
         .msg { margin-bottom: 10px; padding: 8px 12px; background: #222; border-radius: 8px; font-size: 14px; }
         .msg.system { background: rgba(255, 215, 0, 0.1); border-left: 3px solid gold; color: #ffd700; }
         .msg-name { font-weight: bold; color: var(--main); font-size: 12px; margin-bottom: 2px; }
@@ -45,16 +45,14 @@
         #modal img { width: 200px; border-radius: 10px; border: 2px solid var(--main); }
         .modal-close { position: absolute; top: 20px; right: 20px; font-size: 30px; cursor: pointer; }
         
-        /* MISC */
         input { width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; margin-bottom: 10px; box-sizing: border-box; }
         .list-item { background: var(--card); padding: 10px; margin-bottom: 5px; border-radius: 5px; display: flex; justify-content: space-between; }
     </style>
 </head>
 <body>
 
-    <div id="loader" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:1000; display:flex; justify-content:center; align-items:center;">Loading...</div>
+    <div id="loader" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:1000; display:flex; justify-content:center; align-items:center;">Connecting...</div>
 
-    <!-- HEADER -->
     <div class="header">
         <div class="avatar" id="u-ava"></div>
         <div id="u-name" style="margin-top:5px; font-weight:bold;">User</div>
@@ -66,19 +64,28 @@
     <div id="home" class="page active">
         <h3>Действия</h3>
         <button class="btn" onclick="api('farm')">⛏️ ФАРМ (+100)</button>
-        <button class="btn" onclick="location.href='game.html'" style="margin-top:10px; background:#aa00ff; color:white;">⚔️ ИГРАТЬ</button>
+        <button class="btn" onclick="location.href='game.html'" style="margin-top:10px; background:#aa00ff; color:white;">⚔️ GOREM BATTLES</button>
         
+        <h3>Игры</h3>
+        <div class="grid">
+            <div class="card-box" onclick="showRoulette()">
+                <h1>🎲</h1>
+                <div>Рулетка</div>
+            </div>
+             <div class="card-box" onclick="nav('lab', document.getElementById('btn-lab'))">
+                <h1>🧪</h1>
+                <div>Лаборатория</div>
+            </div>
+        </div>
+
         <h3>Профиль</h3>
         <div class="grid">
             <div class="card-box"><div>Вайпы</div><h2 id="u-wipes">0</h2></div>
             <div class="card-box"><div>Карты</div><h2 id="u-cards">0</h2></div>
         </div>
-
-        <h3>Промокод</h3>
-        <div style="display:flex; gap:5px;">
-            <input type="text" id="promo-code" placeholder="CODE">
-            <button class="btn" style="width:auto; margin:0;" onclick="usePromo()">OK</button>
-        </div>
+        
+        <input type="text" id="promo-code" placeholder="Промокод">
+        <button class="btn" style="width:auto;" onclick="usePromo()">OK</button>
     </div>
 
     <!-- CHAT -->
@@ -104,9 +111,14 @@
         </div>
     </div>
 
+    <!-- LAB -->
+    <div id="lab" class="page">
+        <h3>Крафт</h3>
+        <div id="recipes-list"></div>
+    </div>
+
     <!-- CRYPTO -->
     <div id="crypto" class="page">
-        <h3>Биржа MTC</h3>
         <h1 style="text-align:center; color:#00aaff;">💎 <span id="mtc-price">0</span></h1>
         <canvas id="chart" style="width:100%; height:200px; margin: 10px 0;"></canvas>
         <input type="number" id="trade-amount" placeholder="Количество">
@@ -146,18 +158,17 @@
         <div class="inv-grid" id="inv-grid"></div>
     </div>
 
-    <!-- NAVIGATION -->
     <div class="tab-bar">
         <button class="tab-btn active" onclick="nav('home', this)">🏠</button>
         <button class="tab-btn" onclick="nav('chat', this)">💬</button>
         <button class="tab-btn" onclick="nav('shop', this)">🛒</button>
         <button class="tab-btn" onclick="nav('crypto', this)">📈</button>
         <button class="tab-btn" onclick="nav('firm', this)">🏢</button>
+        <button class="tab-btn" id="btn-lab" onclick="nav('lab', this)">🧪</button>
         <button class="tab-btn" onclick="nav('top', this)">🏆</button>
         <button class="tab-btn" onclick="nav('inv', this)">🎒</button>
     </div>
 
-    <!-- MODAL -->
     <div id="modal">
         <div class="modal-close" onclick="closeModal()">✖</div>
         <img id="m-img" src="">
@@ -170,7 +181,7 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
         
-        // !!! URL ВАШЕГО БОТА НА RENDER !!!
+        // !!! ЗАМЕНИ НА СВОЙ !!!
         const API_URL = "https://my-super-bot-1gwh.onrender.com"; 
 
         let user = tg.initDataUnsafe?.user || { id: 7328565195, first_name: "Test", username: "test" };
@@ -180,15 +191,9 @@
 
         async function init() {
             try {
-                // Fix Avatar
                 const avaDiv = document.getElementById('u-ava');
-                if (user.photo_url) {
-                    avaDiv.style.backgroundImage = `url('${user.photo_url}')`;
-                    avaDiv.innerText = "";
-                } else {
-                    avaDiv.innerText = user.first_name[0];
-                }
-
+                avaDiv.innerText = user.first_name[0];
+                
                 const res = await fetch(`${API_URL}/api/get_user`, {
                     method: 'POST',
                     body: JSON.stringify({ user_id: user.id, first_name: user.first_name })
@@ -210,17 +215,27 @@
             invDiv.innerHTML = "";
             appData.inventory.forEach(c => {
                 totalCards += c.count;
-                invDiv.innerHTML += `
-                    <div class="inv-card" onclick='showCard(${JSON.stringify(c)})'>
-                        <img src="${c.image_url}">
-                        <div class="inv-count">x${c.count}</div>
-                    </div>
-                `;
+                invDiv.innerHTML += `<div class="inv-card" onclick='showCard(${JSON.stringify(c)})'><img src="${c.image_url}"><div class="inv-count">x${c.count}</div></div>`;
             });
             document.getElementById('u-cards').innerText = totalCards;
 
             document.getElementById('mtc-price').innerText = appData.crypto.price;
             drawChart(appData.crypto.history);
+
+            // Lab
+            const labDiv = document.getElementById('recipes-list');
+            labDiv.innerHTML = "";
+            // В v8.0 боте нет передачи рецептов в init, но мы их знаем
+            // Либо хардкодим, либо бот должен их слать. В коде бота v8.0 я не добавил возврат рецептов, добавь если нужно.
+            // Пока просто пример:
+            const recipes = [
+                {id: "astolfo", name: "Астольфо", ings: ["нейронка", "Тимофей", "Минетка"]},
+                {id: "kryptonit", name: "Крипто-нит", ings: ["вафля", "валера", "Тимофей"]},
+                {id: "lagrande", name: "La Grande Бот", ings: ["Iris бот", "Горем Бот"]}
+            ];
+            recipes.forEach(r => {
+                labDiv.innerHTML += `<div class="card-box" style="margin-bottom:10px;"><h3>${r.name}</h3><small>${r.ings.join(" + ")}</small><br><button class="btn" style="margin-top:5px;" onclick="api('craft', {recipe_id: '${r.id}'})">Скрафтить</button></div>`;
+            });
 
             if (appData.firm) {
                 document.getElementById('firm-exists').style.display = 'block';
@@ -245,29 +260,21 @@
                     if (data.msg) tg.showAlert(data.msg);
                     if (data.card) showCard(data.card);
                     init();
-                } else {
-                    tg.showAlert(data.msg || "Ошибка");
-                }
+                } else { tg.showAlert(data.msg || "Ошибка"); }
             } catch(e) { tg.MainButton.hideProgress(); alert(e); }
         }
 
-        // --- CHAT LOGIC ---
         async function loadChat() {
             try {
                 const res = await fetch(`${API_URL}/api/chat_get`, { method: 'POST', body: JSON.stringify({ user_id: user.id }) });
                 const data = await res.json();
                 const list = document.getElementById('chat-list');
                 list.innerHTML = "";
+                // Reverse is handled by flex-direction
                 data.messages.forEach(m => {
                     const cls = m.is_system ? 'msg system' : 'msg';
-                    list.innerHTML += `
-                        <div class="${cls}">
-                            <div class="msg-name">${m.username}</div>
-                            <div>${m.message}</div>
-                        </div>
-                    `;
+                    list.innerHTML += `<div class="${cls}"><div class="msg-name">${m.username}</div><div>${m.message}</div></div>`;
                 });
-                list.scrollTop = list.scrollHeight;
             } catch(e) {}
         }
 
@@ -276,14 +283,23 @@
             const msg = inp.value;
             if(!msg) return;
             inp.value = "";
-            await fetch(`${API_URL}/api/chat_send`, { 
-                method: 'POST', 
-                body: JSON.stringify({ user_id: user.id, name: user.first_name, message: msg }) 
-            });
+            await fetch(`${API_URL}/api/chat_send`, { method: 'POST', body: JSON.stringify({ user_id: user.id, name: user.first_name, message: msg }) });
             loadChat();
         }
 
-        // --- ACTIONS ---
+        function showRoulette() {
+            tg.showPopup({
+                title: 'Рулетка',
+                message: 'Сделайте ставку:',
+                buttons: [{id: '100', text: '100'}, {id: '1000', text: '1000'}, {id: 'all', text: 'Ва-банк'}]
+            }, (btnId) => {
+                if(btnId) {
+                    let amt = btnId === 'all' ? appData.user.balance : parseInt(btnId);
+                    api('roulette', { amount: amt });
+                }
+            });
+        }
+
         function buy(type, price) { tg.showConfirm(`Купить кейс ${type}?`, (ok) => { if(ok) api('buy_case', { type: type }); }); }
         function trade(op) { const val = document.getElementById('trade-amount').value; if(val) api('crypto_trade', { op: op, amount: val }); }
         function usePromo() { const code = document.getElementById('promo-code').value; if(code) api('promo', { code: code }); }
@@ -300,10 +316,8 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             btn.classList.add('active');
-            
             if(id === 'chat') { loadChat(); chatInterval = setInterval(loadChat, 3000); }
             else { if(chatInterval) clearInterval(chatInterval); }
-            
             if(id === 'top') loadTop();
         }
 
@@ -321,21 +335,16 @@
             const data = await res.json();
             const list = document.getElementById('top-list');
             list.innerHTML = "";
-            data.top.forEach((u, i) => {
-                list.innerHTML += `<div class="list-item"><div>${i+1}. ${u.first_name}</div><div style="color:gold">${u.balance}</div></div>`;
-            });
+            data.top.forEach((u, i) => { list.innerHTML += `<div class="list-item"><div>${i+1}. ${u.first_name}</div><div style="color:gold">${u.balance}</div></div>`; });
         }
-        async function loadFirmsList() { document.getElementById('firm-list').innerText = "Введите ID фирмы (Список в боте: /firmlist)"; }
+        async function loadFirmsList() { document.getElementById('firm-list').innerText = "Введите ID фирмы (Узнайте у владельца)"; }
         
         function drawChart(data) {
             const ctx = document.getElementById('chart').getContext('2d');
             if (chartInstance) chartInstance.destroy();
             chartInstance = new Chart(ctx, {
                 type: 'line',
-                data: {
-                    labels: data.map((_, i) => i),
-                    datasets: [{ label: 'MTC', data: data, borderColor: '#00aaff', borderWidth: 2, pointRadius: 0, fill: true, backgroundColor: 'rgba(0, 170, 255, 0.1)' }]
-                },
+                data: { labels: data.map((_, i) => i), datasets: [{ label: 'MTC', data: data, borderColor: '#00aaff', borderWidth: 2, pointRadius: 0, fill: true, backgroundColor: 'rgba(0, 170, 255, 0.1)' }] },
                 options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { ticks: { color: '#666' }, grid: { color: '#333' } } } }
             });
         }
